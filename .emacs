@@ -1,3 +1,19 @@
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(dired-listing-switches "-alh --group-directories-first")
+ '(ispell-dictionary nil)
+ '(package-selected-packages
+   '(yaml-mode yaml dired-subtree tabbar dts-mode sr-speedbar markdown-mode smex dashboard text-scale text-scale-mode elpy default-text-scale nyan-mode auto-complete evil yasnippet-snippets yasnippet company-statistics company use-package)))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
+
 (setq inhibit-startup-message t)
 (windmove-default-keybindings)
 ;(global-hl-line-mode -1)
@@ -34,22 +50,10 @@
 (setq use-package-always-ensure t)
 
 
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(dired-listing-switches "-alh --group-directories-first")
- '(ispell-dictionary nil)
- '(package-selected-packages
-   '(yaml-mode yaml dired-subtree tabbar dts-mode sr-speedbar markdown-mode smex dashboard text-scale text-scale-mode elpy default-text-scale nyan-mode auto-complete evil yasnippet-snippets yasnippet company-statistics company use-package)))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
-
+(use-package markdown-mode
+  :ensure t
+  :mode ("README\\.md\\'" . gfm-mode)
+  :init (setq markdown-command "multimarkdown"))
 
 (use-package company
   :bind (:map company-active-map
@@ -90,22 +94,10 @@
   (global-set-key "\C-x\ \C-r" 'recentf-open-files)
   (recentf-mode t))
 
-;(use-package smex
-;  :ensure t
-;  :disabled t
-;  :config(setq smex-save-file (concat user-emacs-directory ".smex-items"))
-;  (smex-initialize)global
-;  :bind
-;  ("M-x" . smex))
-
-(require 'smex)
-(global-set-key (kbd "<f4>") 'find-file-at-point)
-(global-set-key (kbd "<f5>") 'sr-speedbar-toggle)
-(global-set-key (kbd "<f6>") 'ibuffer)
-(global-set-key (kbd "<f7>") 'smex)
-(global-set-key (kbd "<f9>") 'hs-toggle-hiding)
-(global-set-key (kbd "M-x") 'smex)
-;(global-set-key (kbd "M-x") 'smex-major-mode-commands)
+(use-package smex
+  :ensure t
+  :bind (("M-x" . smex))
+  :config (smex-initialize))
 
 (use-package yasnippet
   :ensure t
@@ -268,3 +260,28 @@
 
 (use-package yaml-mode
   :mode ("\\.yml$" . yaml-mode))
+
+(use-package rst
+  :mode (("\\.txt$" . rst-mode)
+         ("\\.rst$" . rst-mode)
+         ("\\.rest$" . rst-mode)))
+
+(use-package transpose-frame
+  :ensure t)
+
+(global-set-key (kbd "<f4>") 'find-file-at-point)
+(global-set-key (kbd "<f5>") 'dired)
+;(global-set-key (kbd "<f5>") 'sr-speedbar-toggle)
+(global-set-key (kbd "<f6>") 'ibuffer)
+(global-set-key (kbd "<f7>") 'smex)
+(global-set-key (kbd "<f8>") 'compile)
+(global-set-key (kbd "<f9>") 'hs-toggle-hiding)
+(global-set-key (kbd "<f10>") 'transpose-frame)
+(global-set-key (kbd "<f12>") 'resize-window)
+(global-set-key (kbd "M-x") 'smex)
+;(global-set-key (kbd "M-<down>") 'enlarge-window)
+
+(put 'scroll-left 'disabled nil)
+
+
+
