@@ -6,7 +6,7 @@
  '(dired-listing-switches "-alh --group-directories-first")
  '(ispell-dictionary nil)
  '(package-selected-packages
-   '(yaml-mode yaml dired-subtree tabbar dts-mode sr-speedbar markdown-mode smex dashboard text-scale text-scale-mode elpy default-text-scale nyan-mode auto-complete evil yasnippet-snippets yasnippet company-statistics company use-package)))
+   '(counsel ag projectile resize-window ggtags dts magit dired-toggle-sudo sudo-edit sudo-save yaml-mode yaml dired-subtree tabbar dts-mode sr-speedbar markdown-mode smex dashboard text-scale text-scale-mode elpy default-text-scale nyan-mode auto-complete evil yasnippet-snippets yasnippet company-statistics company use-package)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -14,7 +14,14 @@
  ;; If there is more than one, they won't work right.
  )
 
+(setq user-full-name "Sanglae Kim"
+      user-mail-address "nova0302@hotmail.com")
+(setq compilation-ask-about-save nil)
+(setq delete-by-moving-to-trash t
+      trash-directory "~/.Trash/")
+
 (setq inhibit-startup-message t)
+
 (windmove-default-keybindings)
 ;(global-hl-line-mode -1)
 (scroll-bar-mode -1)        ; Disable visible scrollbar
@@ -98,6 +105,17 @@
   :ensure t
   :bind (("M-x" . smex))
   :config (smex-initialize))
+(use-package ggtags
+  :config
+  (add-hook 'c-mode-hook
+	    (lambda ()
+	      (ggtags-mode t)))
+  (add-hook 'c-mode-common-hook
+	    (lambda ()
+	      (when (derived-mode-p 'c-mode 'c++-mode 'java-mode)
+		(ggtags-mode t)))))
+
+(require 'flymake)
 
 (use-package yasnippet
   :ensure t
@@ -113,12 +131,18 @@
   :init
   (setq evil-want-C-d-scroll t)
   :config
+  (modify-syntax-entry ?_ "w")
   (evil-mode t)
   (evil-set-initial-state 'calendar-mode 'emacs)
   (evil-set-initial-state 'calculator-mode 'emacs)
   (evil-set-initial-state 'git-rebase-mode 'emacs)
   (evil-set-initial-state 'magit-blame-mode 'emacs)
   (setq-default evil-symbol-word-search t))
+
+(define-key evil-normal-state-map (kbd "C-]")'ggtags-find-tag-dwim)
+(define-key evil-insert-state-map (kbd "C-/") 'completion-at-point)
+
+
 
 ;(use-package auto-complete-config
 ;  :ensure auto-complete
@@ -205,7 +229,7 @@
   (dashboard-setup-startup-hook))
 (global-auto-revert-mode 1)
 
-(global-set-key (kbd "C-=") 'default-text-scale-increase)
+(global-set-key (kbd "C-+") 'default-text-scale-increase)
 (global-set-key (kbd "C--") 'default-text-scale-decrease)
 
 (use-package sr-speedbar
@@ -269,6 +293,54 @@
 (use-package transpose-frame
   :ensure t)
 
+(use-package sudo-edit
+  :ensure t)
+
+;https://menno.io/posts/use-package/
+(use-package magit
+  :init
+  (message "Loading Magit!")
+  :config
+  (message "Loaded Magit!")
+  :bind (("C-x g" . magit-status)
+         ("C-x C-g" . magit-status)))
+
+(use-package projectile
+  :ensure t
+  :init
+  (projectile-mode +1)
+  :bind (:map projectile-mode-map
+              ("s-p" . projectile-command-map)
+              ("C-c p" . projectile-command-map)))
+
+;(use-package counsel
+;  :ensure t)
+;
+;(use-package ivy
+;  :ensure t
+;  :config
+;  (setq ivy-use-virtual-buffers t)
+;  (setq enable-recursive-minibuffers t)
+;  ;; enable this if you want `swiper' to use it
+;  ;; (setq search-default-mode #'char-fold-to-regexp)
+;  (global-set-key "\C-s" 'swiper)
+;  (global-set-key (kbd "C-c C-r") 'ivy-resume)
+;  (global-set-key (kbd "<f6>") 'ivy-resume)
+;  (global-set-key (kbd "M-x") 'counsel-M-x)
+;  (global-set-key (kbd "C-x C-f") 'counsel-find-file)
+;;  (global-set-key (kbd "<f1> f") 'counsel-describe-function)
+;;  (global-set-key (kbd "<f1> v") 'counsel-describe-variable)
+;;  (global-set-key (kbd "<f1> o") 'counsel-describe-symbol)
+;;  (global-set-key (kbd "<f1> l") 'counsel-find-library)
+;;  (global-set-key (kbd "<f2> i") 'counsel-info-lookup-symbol)
+;;  (global-set-key (kbd "<f2> u") 'counsel-unicode-char)
+;  (global-set-key (kbd "C-c g") 'counsel-git)
+;  (global-set-key (kbd "C-c j") 'counsel-git-grep)
+;  (global-set-key (kbd "C-c k") 'counsel-ag)
+;  (global-set-key (kbd "C-x l") 'counsel-locate)
+;  (global-set-key (kbd "C-S-o") 'counsel-rhythmbox)
+;  (define-key minibuffer-local-map (kbd "C-r") 'counsel-minibuffer-history))
+;
 (global-set-key (kbd "<f4>") 'find-file-at-point)
 (global-set-key (kbd "<f5>") 'dired)
 ;(global-set-key (kbd "<f5>") 'sr-speedbar-toggle)
@@ -277,7 +349,8 @@
 (global-set-key (kbd "<f8>") 'compile)
 (global-set-key (kbd "<f9>") 'hs-toggle-hiding)
 (global-set-key (kbd "<f10>") 'transpose-frame)
-(global-set-key (kbd "<f12>") 'resize-window)
+(global-set-key (kbd "<f12>") 'hs-hide-level)
+;(global-set-key (kbd "<f12>") 'resize-window)
 (global-set-key (kbd "M-x") 'smex)
 ;(global-set-key (kbd "M-<down>") 'enlarge-window)
 
