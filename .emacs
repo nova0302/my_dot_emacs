@@ -6,7 +6,7 @@
  '(dired-listing-switches "-alh --group-directories-first")
  '(ispell-dictionary nil)
  '(package-selected-packages
-   '(counsel ag projectile resize-window ggtags dts magit dired-toggle-sudo sudo-edit sudo-save yaml-mode yaml dired-subtree tabbar dts-mode sr-speedbar markdown-mode smex dashboard text-scale text-scale-mode elpy default-text-scale nyan-mode auto-complete evil yasnippet-snippets yasnippet company-statistics company use-package)))
+   '(cmake-mode counsel ag projectile resize-window ggtags dts magit dired-toggle-sudo sudo-edit sudo-save yaml-mode yaml dired-subtree tabbar dts-mode sr-speedbar markdown-mode smex dashboard text-scale text-scale-mode elpy default-text-scale nyan-mode auto-complete evil yasnippet-snippets yasnippet company-statistics company use-package)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -131,7 +131,7 @@
   :init
   (setq evil-want-C-d-scroll t)
   :config
-  (modify-syntax-entry ?_ "w")
+  ;(modify-syntax-entry ?_ "w")
   (evil-mode t)
   (evil-set-initial-state 'calendar-mode 'emacs)
   (evil-set-initial-state 'calculator-mode 'emacs)
@@ -139,9 +139,13 @@
   (evil-set-initial-state 'magit-blame-mode 'emacs)
   (setq-default evil-symbol-word-search t))
 
+;(modify-syntax-entry ?_ "w")
 (define-key evil-normal-state-map (kbd "C-]")'ggtags-find-tag-dwim)
 (define-key evil-insert-state-map (kbd "C-/") 'completion-at-point)
 
+(add-hook 'after-change-major-mode-hook
+          (lambda ()
+            (modify-syntax-entry ?_ "w")))
 
 
 ;(use-package auto-complete-config
@@ -232,23 +236,29 @@
 (global-set-key (kbd "C-+") 'default-text-scale-increase)
 (global-set-key (kbd "C--") 'default-text-scale-decrease)
 
-(use-package sr-speedbar
-  :ensure t
-  :defer t
-  :init
-;  (setq sr-speedbar-skip-other-window-p t)
+;(use-package sr-speedbar
+;  :ensure t
+;  :defer t
+;  :init
+;;  (setq sr-speedbar-skip-other-window-p t)
+;  (setq sr-speedbar-right-side nil)
+;  (setq speedbar-show-unknown-files t)
+;  (setq sr-speedbar-width 35)
+;  (setq sr-speedbar-max-width 35)
+;  (setq speedbar-use-images t)
+;;  (setq speedbar-initial-expansion-list-name "quick buffers")
+;  ;(define-key speedbar-mode-map "\M-p" nil)
+;  ;;(sr-speedbar-open)
+;  :config
+;  ;(with-current-buffer sr-speedbar-buffer-name
+;  ;  (setq window-size-fixed 'width))
+;  )
+(require 'sr-speedbar)
   (setq sr-speedbar-right-side nil)
   (setq speedbar-show-unknown-files t)
   (setq sr-speedbar-width 35)
   (setq sr-speedbar-max-width 35)
   (setq speedbar-use-images t)
-;  (setq speedbar-initial-expansion-list-name "quick buffers")
-  ;(define-key speedbar-mode-map "\M-p" nil)
-  ;;(sr-speedbar-open)
-  :config
-  ;(with-current-buffer sr-speedbar-buffer-name
-  ;  (setq window-size-fixed 'width))
-  )
 
 (load-theme 'deeper-blue)
 
@@ -356,5 +366,42 @@
 
 (put 'scroll-left 'disabled nil)
 
+(setq ibuffer-saved-filter-groups
+      (quote (("default"
+	       ("dired" (mode . dired-mode))
+	       ("perl" (mode . cperl-mode))
+	       ("erc" (mode . erc-mode))
+	       ("planner" (or
+			   (name . "^\\*Calendar\\*$")
+			   (name . "^diary$")
+			   (mode . muse-mode)))
+	       ("emacs" (or
+			 (name . "^\\*scratch\\*$")
+			 (name . "^\\*Messages\\*$")))
+	       ("svg" (name . "\\.svg")) ; group by file extension
+	       ("gnus" (or
+			(mode . message-mode)
+			(mode . bbdb-mode)
+			(mode . mail-mode)
+			(mode . gnus-group-mode)
+			(mode . gnus-summary-mode)
+			(mode . gnus-article-mode)
+			(name . "^\\.bbdb$")
+			(name . "^\\.newsrc-dribble")))))))
 
 
+(add-hook 'ibuffer-mode-hook
+	  (lambda ()
+	    (ibuffer-switch-to-saved-filter-groups "default")))
+
+
+
+;; Enable ibuffer-filter-by-filename to filter on directory names too.
+(eval-after-load "ibuf-ext"
+  '(define-ibuffer-filter filename
+       "Toggle current view to buffers with file or directory name matching QUALIFIER."
+     (:description "filename"
+		   :reader (read-from-minibuffer "Filter by file/directory name (regexp): "))
+     (ibuffer-awhen (or (buffer-local-value 'buffer-file-name buf)
+			(buffer-local-value 'dired-directory buf))
+		    (string-match qualifier it))))
