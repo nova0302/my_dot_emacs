@@ -46,6 +46,7 @@
 (require 'paren)
 (setq show-paren-style 'parenthesis)
 (show-paren-mode 1)
+
 (when (fboundp 'electric-pair-mode)
   (electric-pair-mode))
 ;
@@ -109,6 +110,7 @@
 	      (when (derived-mode-p 'c-mode 'c++-mode 'java-mode)
 		(ggtags-mode t)))))
 ;
+
 (require 'flymake)
 
 (use-package yasnippet
@@ -186,7 +188,6 @@
 ;
 ;;; backup in one place. flat, no tree structure
 (setq backup-directory-alist '(("" . "~/.emacs.d/backup")))
-;
 (setq dired-dwim-target t)
 ;
 ;;https://unipro.tistory.com/230
