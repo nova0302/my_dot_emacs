@@ -3,12 +3,8 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
-;;; '(company-backends
-;;;   '(company-bbdb company-semantic company-cmake company-capf company-files
-;;;		  (company-dabbrev-code company-gtags company-etags company-keywords)
-;;;		  company-oddmuse company-dabbrev))
  '(package-selected-packages
-   '(dired+ dts yasnippet-snippets yaml-mode use-package transpose-frame tabbar sudo-edit sr-speedbar smex resize-window projectile nyan-mode magit lsp-ui kotlin-mode highlight-doxygen ggtags flycheck exec-path-from-shell evil elpy dts-mode doxy-graph-mode dired-toggle-sudo default-text-scale dashboard counsel company-tabnine company-statistics cmake-mode ag)))
+   '(idle-highlight-mode dired+ dts yasnippet-snippets yaml-mode use-package transpose-frame tabbar sudo-edit sr-speedbar smex resize-window projectile nyan-mode magit lsp-ui kotlin-mode highlight-doxygen ggtags flycheck exec-path-from-shell evil elpy dts-mode doxy-graph-mode dired-toggle-sudo default-text-scale dashboard counsel company-tabnine company-statistics cmake-mode ag)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -124,7 +120,7 @@
   :init
   (setq evil-want-C-d-scroll t)
   :config
-					;(modify-syntax-entry ?_ "w")
+  (modify-syntax-entry ?_ "w")
   (evil-mode t)
   (evil-set-initial-state 'calculator-mode 'emacs)
   (evil-set-initial-state 'git-rebase-mode 'emacs)
@@ -133,8 +129,8 @@
 
 (add-hook 'prog-mode-hook #'hs-minor-mode)
 
-;(load-theme 'deeper-blue)
-;(load-theme 'manoj-dark)
+					;(load-theme 'deeper-blue)
+					;(load-theme 'manoj-dark)
 (load-theme 'misterioso)
 
 (use-package default-text-scale
@@ -147,9 +143,9 @@
 
 (require 'flymake)
 
-(add-hook 'prog-mode-hook
-	  (lambda ()
-	    (setq show-trailing-whitespace t)))
+;;;(add-hook 'prog-mode-hook
+;;;	  (lambda ()
+;;;	    (setq show-trailing-whitespace t)))
 
 (use-package ggtags
   :config
@@ -194,7 +190,7 @@
   ("<f3>" . tabbar-forward))
 
 ;;https://stackoverflow.com/questions/443302/emacs-how-to-compile-run-make-without-pressing-enter-for-the-compile-command
-;(setq compilation-read-command nil)
+					;(setq compilation-read-command nil)
 
 (global-set-key (kbd "<f4>") 'find-file-at-point)
 (global-set-key (kbd "<f5>") 'dired)
@@ -219,64 +215,65 @@
   (setq sr-speedbar-max-width 35)
   (setq speedbar-use-images nil)
 					;(setq speedbar-initial-expansion-list-name "quick buffers")
-  (sr-speedbar-open)
-  (with-current-buffer sr-speedbar-buffer-name
-    (setq window-size-fixed 'width))
-  (define-key speedbar-mode-map "\M-p" nil))
+;  (sr-speedbar-open)
+;  (with-current-buffer sr-speedbar-buffer-name
+;    (setq window-size-fixed 'width))
+;  (define-key speedbar-mode-map "\M-p" nil)
+  )
 
 (add-hook 'dired-mode-hook 'auto-revert-mode)
 
 (setq auto-mode-alist (cons '("\\.\\(pde\\|ino\\)$" . c++-mode) auto-mode-alist))
 
-;(add-to-list 'load-path "~/.emacs.d/vendor/arduino-mode")
-;(setq auto-mode-alist (cons '("\\.\\(pde\\|ino\\)$" . arduino-mode) auto-mode-alist))
-;(autoload 'arduino-mode "arduino-mode" "Arduino editing mode." t)
+					;(add-to-list 'load-path "~/.emacs.d/vendor/arduino-mode")
+					;(setq auto-mode-alist (cons '("\\.\\(pde\\|ino\\)$" . arduino-mode) auto-mode-alist))
+					;(autoload 'arduino-mode "arduino-mode" "Arduino editing mode." t)
 
-(setq ibuffer-saved-filter-groups
-      (quote (("default"
-	       ("dired" (mode . dired-mode))
-	       ("perl" (mode . cperl-mode))
-	       ("erc" (mode . erc-mode))
-	       ("planner" (or
-			   (name . "^\\*Calendar\\*$")
-			   (name . "^diary$")
-			   (mode . muse-mode)))
-	       ("emacs" (or
-			 (name . "^\\*scratch\\*$")
-			 (name . "^\\*Messages\\*$")))
-	       ("svg" (name . "\\.svg")) ; group by file extension
-	       ("gnus" (or
-			(mode . message-mode)
-			(mode . bbdb-mode)
-			(mode . mail-mode)
-			(mode . gnus-group-mode)
-			(mode . gnus-summary-mode)
-			(mode . gnus-article-mode)
-			(name . "^\\.bbdb$")
-			(name . "^\\.newsrc-dribble")))))))
-(add-hook 'ibuffer-mode-hook
-	  (lambda ()
-	    (ibuffer-switch-to-saved-filter-groups "default")))
+;(setq ibuffer-saved-filter-groups
+;      (quote (("default"
+;	       ("dired" (mode . dired-mode))
+;	       ("perl" (mode . cperl-mode))
+;	       ("erc" (mode . erc-mode))
+;	       ("planner" (or
+;			   (name . "^\\*Calendar\\*$")
+;			   (name . "^diary$")
+;			   (mode . muse-mode)))
+;	       ("emacs" (or
+;			 (name . "^\\*scratch\\*$")
+;			 (name . "^\\*Messages\\*$")))
+;	       ("svg" (name . "\\.svg")) ; group by file extension
+;	       ("gnus" (or
+;			(mode . message-mode)
+;			(mode . bbdb-mode)
+;			(mode . mail-mode)
+;			(mode . gnus-group-mode)
+;			(mode . gnus-summary-mode)
+;			(mode . gnus-article-mode)
+;			(name . "^\\.bbdb$")
+;			(name . "^\\.newsrc-dribble")))))))
+;(add-hook 'ibuffer-mode-hook
+;	  (lambda ()
+;	    (ibuffer-switch-to-saved-filter-groups "default")))
 
 ;; Use human readable Size column instead of original one
-(define-ibuffer-column size-h
-  (:name "Size" :inline t)
-  (cond
-   ((> (buffer-size) 1000000) (format "%7.1fM" (/ (buffer-size) 1000000.0)))
-   ((> (buffer-size) 100000) (format "%7.0fk" (/ (buffer-size) 1000.0)))
-   ((> (buffer-size) 1000) (format "%7.1fk" (/ (buffer-size) 1000.0)))
-   (t (format "%8d" (buffer-size)))))
+;;(define-ibuffer-column size-h
+;;  (:name "Size" :inline t)
+;;  (cond
+;;   ((> (buffer-size) 1000000) (format "%7.1fM" (/ (buffer-size) 1000000.0)))
+;;   ((> (buffer-size) 100000) (format "%7.0fk" (/ (buffer-size) 1000.0)))
+;;   ((> (buffer-size) 1000) (format "%7.1fk" (/ (buffer-size) 1000.0)))
+;;   (t (format "%8d" (buffer-size)))))
 
 ;; Modify the default ibuffer-formats
-(setq ibuffer-formats
-      '((mark modified read-only " "
-	      (name 18 18 :left :elide)
-	      " "
-	      (size-h 9 -1 :right)
-	      " "
-	      (mode 16 16 :left :elide)
-	      " "
-	      filename-and-process)))
+;(setq ibuffer-formats
+;      '((mark modified read-only " "
+;	      (name 18 18 :left :elide)
+;	      " "
+;	      (size-h 9 -1 :right)
+;	      " "
+;	      (mode 16 16 :left :elide)
+;	      " "
+;	      filename-and-process)))
 
 ;; Enable ibuffer-filter-by-filename to filter on directory names too.
 (eval-after-load "ibuf-ext"
@@ -288,13 +285,43 @@
 			(buffer-local-value 'dired-directory buf))
        (string-match qualifier it))))
 
-; from enberg on #emacs
-(add-hook 'compilation-finish-functions
-  (lambda (buf str)
-    (if (null (string-match ".*exited abnormally.*" str))
-        ;;no errors, make the compilation window go away in a few seconds
-        (progn
-          (run-at-time
-           "5 sec" nil 'delete-windows-on
-           (get-buffer-create "*compilation*"))
-          (message "No Compilation Errors!")))))
+					; from enberg on #emacs
+;;(add-hook 'compilation-finish-functions
+;;	  (lambda (buf str)
+;;	    (if (null (string-match ".*exited abnormally.*" str))
+;;		;;no errors, make the compilation window go away in a few seconds
+;;		(progn
+;;		  (run-at-time
+;;		   "5 sec" nil 'delete-windows-on
+;;		   (get-buffer-create "*compilation*"))
+;;		  (message "No Compilation Errors!")))))
+
+(add-to-list 'auto-mode-alist '("\\.m\\'" . octave-mode))
+
+(load "~/.emacs.d/plugins/highlight-chars.el")
+
+(require 'multiple-cursors)
+;;(global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
+;;(global-set-key (kbd "C->") 'mc/mark-next-like-this)
+;;(global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
+;;(global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
+
+(global-set-key (kbd "C-M-j") 'mc/mark-all-dwim)
+(global-set-key (kbd "C-M-c") 'mc/edit-lines)
+
+;; Select region first, then create cursors.
+(global-set-key (kbd "C-M-/") 'mc/mark-all-like-this)
+(global-set-key (kbd "C-M-,") 'mc/mark-previous-like-this)
+(global-set-key (kbd "C-M-,") 'mc/mark-next-like-this)
+
+;; Skip this match and move to next one.
+(global-set-key (kbd "C-M-<") 'mc/skip-to-previous-like-this)
+(global-set-key (kbd "C-M->") 'mc/skip-to-next-like-this)
+
+;;(modify-syntax-entry ?_ "w")
+;(setq evil-symbol-word-search t)
+;;
+(add-hook 'after-change-major-mode-hook
+          (lambda ()
+            (modify-syntax-entry ?_ "w")))
+(idle-highlight-global-mode t)
