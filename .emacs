@@ -3,8 +3,16 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(auto-hide-compile-buffer-delay 3)
+ '(company-auto-complete t)
+ '(company-idle-delay 0.2)
+ '(company-minimum-prefix-length 2)
+ '(flymake-diagnostic-at-point-display-diagnostic-function 'flymake-diagnostic-at-point-display-minibuffer)
+ '(help-at-pt-display-when-idle '(flymake-overlay) nil (help-at-pt))
+ '(help-at-pt-timer-delay 0.9)
  '(package-selected-packages
-   '(idle-highlight-mode dired+ dts yasnippet-snippets yaml-mode use-package transpose-frame tabbar sudo-edit sr-speedbar smex resize-window projectile nyan-mode magit lsp-ui kotlin-mode highlight-doxygen ggtags flycheck exec-path-from-shell evil elpy dts-mode doxy-graph-mode dired-toggle-sudo default-text-scale dashboard counsel company-tabnine company-statistics cmake-mode ag)))
+   '(0blayout magithub lsp-mode lua-mode transpose-frame scala-mode neotree magit ggtags helm sr-speedbar arduino-mode flymake flymake-cursor yasnippet-snippets yasnippet company-quickhelp company smex idle-highlight-mode resize-window default-text-scale use-package dts-mode evil))
+ '(warning-suppress-types '((comp) (comp))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -12,37 +20,52 @@
  ;; If there is more than one, they won't work right.
  )
 
+(global-hi-lock-mode 1)
 
-(require 'package)
-;(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
-;; Comment/uncomment this line to enable MELPA Stable if desired.  See `package-archive-priorities`
-;; and `package-pinned-packages`. Most users will not need or want to do this.
-(add-to-list 'package-archives '("melpa-stable" . "https://stable.melpa.org/packages/") t)
-;;(add-to-list 'package-archives '("MELPA Stable" . "https://stable.melpa.org/packages/") t)
-
-(package-initialize)
-
-(setq byte-compile-warning '(cl-functions))
-
-(setq dired-dwim-target t)
-(scroll-bar-mode -1)        ; Disable visible scrollbar
-(tool-bar-mode -1)          ; Disable the toolbar
-(tooltip-mode -1)           ; Disable tooltips
-(set-fringe-mode 10)        ; Give some breathing room
-(menu-bar-mode -1)            ; Disable the menu bar
-(defalias 'yes-or-no-p 'y-or-n-p)
+;;disable splash screen and startup message
+(setq inhibit-startup-message t) 
+(setq initial-scratch-message nil)
 
 (setq user-full-name "Sanglae Kim"
       user-mail-address "nova0302@hotmail.com")
 
+(require 'package)
+(add-to-list 'package-archives '("melpa-stable" . "https://stable.melpa.org/packages/") t)
+(package-initialize)
+
+(require 'flymake)
+
+(setq dired-listing-switches "-alh --group-directories-first")
+(setq dired-dwim-target t)
+
+(use-package helm
+  :ensure t
+  :demand
+  :bind (("M-x" . helm-M-x)
+         ("C-x C-f" . helm-find-files)
+         ("C-x b" . helm-buffers-list)
+         ("C-x c o" . helm-occur)) ;SC
+  ("M-y" . helm-show-kill-ring) ;SC
+  ("C-x r b" . helm-filtered-bookmarks) ;SC
+;;;  :preface (require 'helm-config)
+  :config (helm-mode 1))
+
+(add-hook 'prog-mode-hook #'hs-minor-mode)
+
+(use-package default-text-scale
+  :ensure t
+  :config
+  (default-text-scale-mode))
+(global-set-key (kbd "C-=") 'default-text-scale-increase)
+(global-set-key (kbd "C--") 'default-text-scale-decrease)
+
+
 (setq backup-directory-alist '(("" . "~/.emacs.d/backup")))
 
 (setq compilation-ask-about-save nil)
+
 (setq delete-by-moving-to-trash t
       trash-directory "~/.Trash/")
-
-(set-default 'truncate-lines t)
-(setq inhibit-startup-message t)
 
 (use-package recentf
   :config
@@ -52,100 +75,208 @@
   (global-set-key "\C-x\ \C-r" 'recentf-open-files)
   (recentf-mode t))
 
-;(use-package flycheck
-;  :ensure t
+(defalias 'yes-or-no-p 'y-or-n-p)
+
+(when (fboundp 'windmove-default-keybindings)
+  (windmove-default-keybindings))
+
+(use-package sr-speedbar
+  :custom
+  ;; Show tree on the left side
+  (sr-speedbar-right-side nil)
+  ;; Show all files
+  (speedbar-show-unknown-files t)
+  ;; Bigger size (default is 24)
+  (sr-speedbar-width 35))
+
+(global-set-key (kbd "<f3>") 'jpt-toggle-mark-word-at-point)
+
+;(global-set-key (kbd "<f3>") 'sr-speedbar-toggle)
+(global-set-key (kbd "<f4>") 'find-file-at-point)
+(global-set-key (kbd "<f5>") 'dired)
+(global-set-key (kbd "<f6>") 'smex)
+(global-set-key (kbd "<f7>") 'recompile)
+(global-set-key (kbd "<f8>") 'compile)
+(global-set-key (kbd "<f9>") 'hs-toggle-hiding)
+(global-set-key (kbd "<f11>") 'resize-window)
+(global-set-key (kbd "<f12>") 'hs-hide-level)
+
+(add-to-list 'load-path "~/.emacs.d/plugins/bb-mode/")
+
+(require 'bb-mode)
+(setq auto-mode-alist (cons '("\\.bb$" . bb-mode) auto-mode-alist))
+(setq auto-mode-alist (cons '("\\.inc$" . bb-mode) auto-mode-alist))
+(setq auto-mode-alist (cons '("\\.bbappend$" . bb-mode) auto-mode-alist))
+(setq auto-mode-alist (cons '("\\.bbclass$" . bb-mode) auto-mode-alist))
+(setq auto-mode-alist (cons '("\\.conf$" . bb-mode) auto-mode-alist))
+
+;(autoload 'octave-mode "octave-mod" nil t)
+(setq auto-mode-alist
+      (cons '("\\.m$" . octave-mode) auto-mode-alist))
+
+;(use-package company
 ;  :init
-;  (add-hook 'prog-mode-hook 'flycheck-mode))
+;  (setq company-backends '((company-files company-keywords company-capf company-dabbrev-code company-etags company-dabbrev)))
+;  :config
+;  (global-company-mode 1))
+;(eval-after-load 'company
+;  '(progn
+;     (define-key company-mode-map (kbd "C-:") 'helm-company)
+;     (define-key company-active-map (kbd "C-:") 'helm-company)))
 
-(use-package flycheck
-  :ensure t
-  :diminish flycheck-mode
-  :commands flycheck-mode
-  :init (global-flycheck-mode)
-  :config
-  (setq flycheck-check-syntax-automatically '(save idle-change mode-enabled)
-        flycheck-idle-change-delay 5.0))
-
-
-
-
-(use-package dts-mode :ensure t)
-
-(setq compilation-ask-about-save nil)
-(set-default 'truncate-lines t)
-(windmove-default-keybindings)
-
-(when (fboundp 'electric-pair-mode)
-  (electric-pair-mode))
-
-
-(use-package company
-  :ensure t
-  :init
-  (add-hook 'after-init-hook 'global-company-mode)
-  :config
-  (setq company-idle-delay 0)
-  (setq company-show-numbers "on"))
-
-
-;;;;(use-package company
-;;;;  :ensure t
-;;;;  :diminish company-mode
-;;;;  :commands (company-complete company-mode)
-;;;;;  :bind (([remap dabbrev-expand] . company-complete)
-;;;;;	 :map prog-mode-map
-;;;;;	 ([tab] . company-indent-or-complete-common))
-;;;;  :init (if (fboundp 'evil-declare-chage-repeat)
-;;;;	    (map #'evil-declare-chage-repeat
-;;;;		 '(company-complete-common
-;;;;		   company-select-next
-;;;;		   company-select-previous
-;;;;		   company-complete-selection
-;;;;		   company-complete-number)))
-;;;;  :config
-;;;;  (use-package company-statistics
-;;;;    :ensure t
-;;;;    :init
-;;;;    (company-statistics-mode))
-;;;;  (setq company-idle-delay 0.0)
-;;;;  (add-hook 'prog-mode-hook 'company-mode))
-;;;;
-(use-package company-tabnine :ensure t)
-(add-to-list 'company-backends #'company-tabnine)
-;;;;(setq company-show-quick-access t)
 (add-hook 'after-init-hook 'global-company-mode)
 
-(use-package evil
-  :ensure t
+(company-quickhelp-mode)
+
+(require 'yasnippet)
+(yas-global-mode 1)
+(yas-reload-all)
+(add-hook 'prog-mode-hook #'yas-minor-mode)
+
+;;;(add-hook 'compilation-start-hook 'compilation-started)
+;;;(add-hook 'compilation-finish-functions 'hide-compile-buffer-if-successful)
+;;;
+;;;(defcustom auto-hide-compile-buffer-delay 0
+;;;  "Time in seconds before auto hiding compile buffer."
+;;;  :group 'compilation
+;;;  :type 'number
+;;;  )
+;;;
+;;;(defun hide-compile-buffer-if-successful (buffer string)
+;;;  (setq compilation-total-time (time-subtract nil compilation-start-time))
+;;;  (setq time-str (concat " (Time: " (format-time-string "%s.%3N" compilation-total-time) "s)"))
+;;;
+;;;  (if
+;;;      (with-current-buffer buffer
+;;;	(setq warnings (eval compilation-num-warnings-found))
+;;;	(setq warnings-str (concat " (Warnings: " (number-to-string warnings) ")"))
+;;;	(setq errors (eval compilation-num-errors-found))
+;;;
+;;;	(if (eq errors 0) nil t)
+;;;	)
+;;;
+;;;      ;;If Errors then
+;;;      (message (concat "Compiled with Errors" warnings-str time-str))
+;;;
+;;;    ;;If Compiled Successfully or with Warnings then
+;;;    (progn
+;;;      (bury-buffer buffer)
+;;;      (run-with-timer auto-hide-compile-buffer-delay nil 'delete-window (get-buffer-window buffer 'visible))
+;;;      (message (concat "Compiled Successfully" warnings-str time-str))
+;;;      )
+;;;    )
+;;;  )
+;;;
+;;;(make-variable-buffer-local 'compilation-start-time)
+;;;
+;;;(defun compilation-started (proc) 
+;;;  (setq compilation-start-time (current-time)))
+
+(load "flymake")
+
+;(eval-after-load 'flymake '(require 'flymake-cursor))
+
+;(use-package flymake-diagnostic-at-point
+;  :after flymake
+;  :config
+;  (add-hook 'flymake-mode-hook #'flymake-diagnostic-at-point-mode))
+
+(add-to-list 'load-path "~/.emacs.d/plugins/flymake-diagnostic-at-point/")
+
+
+(eval-after-load 'flymake
+  '(require 'flymake-diagnostic-at-point))
+(add-hook 'flymake-mode-hook #'flymake-diagnostic-at-point-mode)
+
+;; Auto refresh buffers
+(global-auto-revert-mode 1)
+
+;; Also auto refresh dired, but be quiet about it
+(setq global-auto-revert-mode 1)
+(setq auto-revert-verbose nil)
+(add-hook 'ibuffer-mode-hook (lambda () (ibuffer-auto-mode 1)))
+
+(setq byte-compile-warnings '(not-free-vars))
+
+(add-hook 'ibuffer-mode-hook
+	  (lambda ()
+	    (ibuffer-auto-mode 1)
+	    (electric-pair-mode)))
+(add-hook 'prog-mode-hook 'electric-pair-mode)
+
+;(add-hook 'compilation-start-hook 'compilation-started)
+;(add-hook 'compilation-finish-functions 'hide-compile-buffer-if-successful)
+;(defcustom auto-hide-compile-buffer-delay 0
+;  "Time in seconds before auto hiding compile buffer."
+;  :group 'compilation
+;  :type 'number)
+;
+;(defun hide-compile-buffer-if-successful (buffer string)
+;  (setq compilation-total-time (time-subtract nil compilation-start-time))
+;  (setq time-str (concat " (Time: " (format-time-string "%s.%3N" compilation-total-time) "s)"))
+;
+;  (if
+;      (with-current-buffer buffer
+;        (setq warnings (eval compilation-num-warnings-found))
+;        (setq warnings-str (concat " (Warnings: " (number-to-string warnings) ")"))
+;        (setq errors (eval compilation-num-errors-found))
+;
+;        (if (eq errors 0) nil t)
+;	)
+;
+;      ;;If Errors then
+;      (message (concat "Compiled with Errors" warnings-str time-str))
+;
+;    ;;If Compiled Successfully or with Warnings then
+;    (progn
+;      (bury-buffer buffer)
+;      (run-with-timer auto-hide-compile-buffer-delay nil 'delete-window (get-buffer-window buffer 'visible))
+;      (message (concat "Compiled Successfully" warnings-str time-str))
+;      )
+;    )
+;  )
+;
+;(make-variable-buffer-local 'compilation-start-time)
+;
+;(defun compilation-started (proc) 
+;  (setq compilation-start-time (current-time)))
+
+
+
+
+(desktop-save-mode 1)
+
+(use-package magit
   :init
-  (setq evil-want-C-d-scroll t)
+  (message "Loading Magit!")
   :config
-  (modify-syntax-entry ?_ "w")
-  (evil-mode t)
-  (evil-set-initial-state 'calculator-mode 'emacs)
-  (evil-set-initial-state 'git-rebase-mode 'emacs)
-  (evil-set-initial-state 'magit-blame-mode 'emacs)
-  (setq-default evil-symbol-word-search t))
+  (message "Loaded Magit!")
+  :bind (("C-x g" . magit-status)
+	 ("C-x C-g" . magit-status))
+  )
 
-(add-hook 'prog-mode-hook #'hs-minor-mode)
+;;;;(evil-mode)
+;;(defalias 'forward-evil-word 'forward-evil-symbol)
 
-					;(load-theme 'deeper-blue)
-					;(load-theme 'manoj-dark)
-(load-theme 'misterioso)
 
-(use-package default-text-scale
-  :ensure t
+(use-package evil
+  :demand t
+  :custom
+  (evil-esc-delay 0.001 "avoid ESC/meta mixups")
+  (evil-shift-width 4)
+  (evil-search-module 'evil-search)
+
+  :bind (:map evil-normal-state-map
+	      ("S" . replace-symbol-at-point))
   :config
-  (default-text-scale-mode))
-					;(global-set-key (kbd "C-+") 'default-text-scale-increase)
-(global-set-key (kbd "C-=") 'default-text-scale-increase)
-(global-set-key (kbd "C--") 'default-text-scale-decrease)
+  ;; Enable evil-mode in all buffers.
+  (evil-mode 1))
+;;(modify-syntax-entry ?_ "w")
+(add-hook 'prog-mode-hook (lambda () (modify-syntax-entry ?_ "w")))
+(add-hook 'prog-mode-hook (lambda () (modify-syntax-entry ?- "w")))
 
-(require 'flymake)
-
-;;;(add-hook 'prog-mode-hook
-;;;	  (lambda ()
-;;;	    (setq show-trailing-whitespace t)))
+;; Auto-refresh dired on file change
+(add-hook 'dired-mode-hook 'auto-revert-mode)
 
 (use-package ggtags
   :config
@@ -160,168 +291,45 @@
 (define-key evil-normal-state-map (kbd "C-]")'ggtags-find-tag-dwim)
 (define-key evil-insert-state-map (kbd "C-/") 'completion-at-point)
 
-(use-package yasnippet
+(require 'hi-lock)
+(defun jpt-toggle-mark-word-at-point ()
+  (interactive)
+  (if hi-lock-interactive-patterns
+      (unhighlight-regexp (car (car hi-lock-interactive-patterns)))
+    (highlight-symbol-at-point)))
+
+
+
+;(use-package idle-highlight-mode
+;  :config (setq idle-highlight-idle-time 5)
+;  :hook ((prog-mode text-mode) . idle-highlight-mode))
+
+;(require 'idle-highlight-mode)
+;(add-hook 'prog-mode-hook 'idle-highlight-mode)
+;(idle-highlight-global-mode)
+
+(add-to-list 'load-path (expand-file-name "~/.emacs.d/plugins/lazycat-theme"))
+					;(require 'lazycat-theme)
+(load-theme 'misteriso)
+
+(use-package ace-window
   :ensure t
-  :init
-  (yas-global-mode 1)
-  :config
-  (use-package yasnippet-snippets
-    :ensure t)
-  (yas-reload-all))
+  :init (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l)
+	      aw-char-position 'left
+	      aw-ignore-current nil
+	      aw-leading-char-style 'char
+	      aw-scope 'frame)
+  :bind (("M-o" . ace-window)
+	 ("M-O" . ace-swap-window)))
 
-(use-package nyan-mode
-  :config
-  (nyan-mode t))
+(setq backup-directory-alist '(("" . "~/.emacs.d/backup")))
 
-(add-hook 'prog-mode-hook #'hs-minor-mode)
-
-(setq dired-listing-switches "-alh --group-directories-first")
-
-(setq desktop-path '("~/.emacs.d/"))
-
-(desktop-save-mode t)
-
-(use-package tabbar
+(use-package ace-window
   :ensure t
-  :init
-  (tabbar-mode 1)
-  :bind
-  ("<f2>" . tabbar-backward)
-  ("<f3>" . tabbar-forward))
-
-;;https://stackoverflow.com/questions/443302/emacs-how-to-compile-run-make-without-pressing-enter-for-the-compile-command
-					;(setq compilation-read-command nil)
-
-(global-set-key (kbd "<f4>") 'find-file-at-point)
-(global-set-key (kbd "<f5>") 'dired)
-(global-set-key (kbd "<f6>") 'smex)
-(global-set-key (kbd "<f7>") 'recompile)
-(global-set-key (kbd "<f8>") 'compile)
-(global-set-key (kbd "<f9>") 'hs-toggle-hiding)
-(global-set-key (kbd "<f11>") 'resize-window)
-(global-set-key (kbd "<f12>") 'hs-hide-level)
-					;(global-set-key (kbd "TAB") 'hippie-expand)
-
-
-					;(add-to-list 'load-path "~/.emacs.d/plugins/jdee-2.4.1/lisp")
-					;(load "jde")
-(use-package sr-speedbar
-  :ensure t
-  :defer t
-  :init
-  (setq sr-speedbar-right-side nil)
-  (setq speedbar-show-unknown-files t)
-  (setq sr-speedbar-width 35)
-  (setq sr-speedbar-max-width 35)
-  (setq speedbar-use-images nil)
-					;(setq speedbar-initial-expansion-list-name "quick buffers")
-;  (sr-speedbar-open)
-;  (with-current-buffer sr-speedbar-buffer-name
-;    (setq window-size-fixed 'width))
-;  (define-key speedbar-mode-map "\M-p" nil)
-  )
-
-(add-hook 'dired-mode-hook 'auto-revert-mode)
-
-(setq auto-mode-alist (cons '("\\.\\(pde\\|ino\\)$" . c++-mode) auto-mode-alist))
-
-					;(add-to-list 'load-path "~/.emacs.d/vendor/arduino-mode")
-					;(setq auto-mode-alist (cons '("\\.\\(pde\\|ino\\)$" . arduino-mode) auto-mode-alist))
-					;(autoload 'arduino-mode "arduino-mode" "Arduino editing mode." t)
-
-;(setq ibuffer-saved-filter-groups
-;      (quote (("default"
-;	       ("dired" (mode . dired-mode))
-;	       ("perl" (mode . cperl-mode))
-;	       ("erc" (mode . erc-mode))
-;	       ("planner" (or
-;			   (name . "^\\*Calendar\\*$")
-;			   (name . "^diary$")
-;			   (mode . muse-mode)))
-;	       ("emacs" (or
-;			 (name . "^\\*scratch\\*$")
-;			 (name . "^\\*Messages\\*$")))
-;	       ("svg" (name . "\\.svg")) ; group by file extension
-;	       ("gnus" (or
-;			(mode . message-mode)
-;			(mode . bbdb-mode)
-;			(mode . mail-mode)
-;			(mode . gnus-group-mode)
-;			(mode . gnus-summary-mode)
-;			(mode . gnus-article-mode)
-;			(name . "^\\.bbdb$")
-;			(name . "^\\.newsrc-dribble")))))))
-;(add-hook 'ibuffer-mode-hook
-;	  (lambda ()
-;	    (ibuffer-switch-to-saved-filter-groups "default")))
-
-;; Use human readable Size column instead of original one
-;;(define-ibuffer-column size-h
-;;  (:name "Size" :inline t)
-;;  (cond
-;;   ((> (buffer-size) 1000000) (format "%7.1fM" (/ (buffer-size) 1000000.0)))
-;;   ((> (buffer-size) 100000) (format "%7.0fk" (/ (buffer-size) 1000.0)))
-;;   ((> (buffer-size) 1000) (format "%7.1fk" (/ (buffer-size) 1000.0)))
-;;   (t (format "%8d" (buffer-size)))))
-
-;; Modify the default ibuffer-formats
-;(setq ibuffer-formats
-;      '((mark modified read-only " "
-;	      (name 18 18 :left :elide)
-;	      " "
-;	      (size-h 9 -1 :right)
-;	      " "
-;	      (mode 16 16 :left :elide)
-;	      " "
-;	      filename-and-process)))
-
-;; Enable ibuffer-filter-by-filename to filter on directory names too.
-(eval-after-load "ibuf-ext"
-  '(define-ibuffer-filter filename
-       "Toggle current view to buffers with file or directory name matching QUALIFIER."
-     (:description "filename"
-		   :reader (read-from-minibuffer "Filter by file/directory name (regexp): "))
-     (ibuffer-awhen (or (buffer-local-value 'buffer-file-name buf)
-			(buffer-local-value 'dired-directory buf))
-       (string-match qualifier it))))
-
-					; from enberg on #emacs
-;;(add-hook 'compilation-finish-functions
-;;	  (lambda (buf str)
-;;	    (if (null (string-match ".*exited abnormally.*" str))
-;;		;;no errors, make the compilation window go away in a few seconds
-;;		(progn
-;;		  (run-at-time
-;;		   "5 sec" nil 'delete-windows-on
-;;		   (get-buffer-create "*compilation*"))
-;;		  (message "No Compilation Errors!")))))
-
-(add-to-list 'auto-mode-alist '("\\.m\\'" . octave-mode))
-
-(load "~/.emacs.d/plugins/highlight-chars.el")
-
-(require 'multiple-cursors)
-;;(global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
-;;(global-set-key (kbd "C->") 'mc/mark-next-like-this)
-;;(global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
-;;(global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
-
-(global-set-key (kbd "C-M-j") 'mc/mark-all-dwim)
-(global-set-key (kbd "C-M-c") 'mc/edit-lines)
-
-;; Select region first, then create cursors.
-(global-set-key (kbd "C-M-/") 'mc/mark-all-like-this)
-(global-set-key (kbd "C-M-,") 'mc/mark-previous-like-this)
-(global-set-key (kbd "C-M-,") 'mc/mark-next-like-this)
-
-;; Skip this match and move to next one.
-(global-set-key (kbd "C-M-<") 'mc/skip-to-previous-like-this)
-(global-set-key (kbd "C-M->") 'mc/skip-to-next-like-this)
-
-;;(modify-syntax-entry ?_ "w")
-;(setq evil-symbol-word-search t)
-;;
-(add-hook 'after-change-major-mode-hook
-          (lambda ()
-            (modify-syntax-entry ?_ "w")))
-(idle-highlight-global-mode t)
+  :init (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l)
+              aw-char-position 'left
+              aw-ignore-current nil
+              aw-leading-char-style 'char
+              aw-scope 'frame)
+  :bind (("M-o" . ace-window)
+         ("M-O" . ace-swap-window)))
