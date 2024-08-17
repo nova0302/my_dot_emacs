@@ -241,9 +241,6 @@
 ;(defun compilation-started (proc) 
 ;  (setq compilation-start-time (current-time)))
 
-
-
-
 (desktop-save-mode 1)
 
 (use-package magit
@@ -257,7 +254,6 @@
 
 ;;;;(evil-mode)
 ;;(defalias 'forward-evil-word 'forward-evil-symbol)
-
 
 (use-package evil
   :demand t
@@ -298,8 +294,6 @@
       (unhighlight-regexp (car (car hi-lock-interactive-patterns)))
     (highlight-symbol-at-point)))
 
-
-
 ;(use-package idle-highlight-mode
 ;  :config (setq idle-highlight-idle-time 5)
 ;  :hook ((prog-mode text-mode) . idle-highlight-mode))
@@ -323,13 +317,3 @@
 	 ("M-O" . ace-swap-window)))
 
 (setq backup-directory-alist '(("" . "~/.emacs.d/backup")))
-
-(use-package ace-window
-  :ensure t
-  :init (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l)
-              aw-char-position 'left
-              aw-ignore-current nil
-              aw-leading-char-style 'char
-              aw-scope 'frame)
-  :bind (("M-o" . ace-window)
-         ("M-O" . ace-swap-window)))
