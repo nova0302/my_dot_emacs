@@ -11,7 +11,7 @@
  '(help-at-pt-display-when-idle '(flymake-overlay) nil (help-at-pt))
  '(help-at-pt-timer-delay 0.9)
  '(package-selected-packages
-   '(0blayout magithub lsp-mode lua-mode transpose-frame scala-mode neotree magit ggtags helm sr-speedbar arduino-mode flymake flymake-cursor yasnippet-snippets yasnippet company-quickhelp company smex idle-highlight-mode resize-window default-text-scale use-package dts-mode evil))
+   '(org-bullets ace-window 0blayout magithub lsp-mode lua-mode transpose-frame scala-mode neotree magit ggtags helm flymake flymake-cursor yasnippet-snippets yasnippet company-quickhelp company smex idle-highlight-mode resize-window default-text-scale use-package dts-mode evil))
  '(warning-suppress-types '((comp) (comp))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -80,35 +80,39 @@
 (when (fboundp 'windmove-default-keybindings)
   (windmove-default-keybindings))
 
-(use-package sr-speedbar
-  :custom
-  ;; Show tree on the left side
-  (sr-speedbar-right-side nil)
-  ;; Show all files
-  (speedbar-show-unknown-files t)
-  ;; Bigger size (default is 24)
-  (sr-speedbar-width 35))
+;(use-package sr-speedbar
+;  :custom
+;  ;; Show tree on the left side
+;  (sr-speedbar-right-side nil)
+;  ;; Show all files
+;  (speedbar-show-unknown-files t)
+;  ;; Bigger size (default is 24)
+;  (sr-speedbar-width 35))
 
 (global-set-key (kbd "<f3>") 'jpt-toggle-mark-word-at-point)
 
 ;(global-set-key (kbd "<f3>") 'sr-speedbar-toggle)
 (global-set-key (kbd "<f4>") 'find-file-at-point)
 (global-set-key (kbd "<f5>") 'dired)
-(global-set-key (kbd "<f6>") 'smex)
+
+;(global-set-key (kbd "<f6>") 'smex)
+(global-set-key (kbd "<f6>") 'helm-M-x)
+
+
 (global-set-key (kbd "<f7>") 'recompile)
 (global-set-key (kbd "<f8>") 'compile)
 (global-set-key (kbd "<f9>") 'hs-toggle-hiding)
 (global-set-key (kbd "<f11>") 'resize-window)
 (global-set-key (kbd "<f12>") 'hs-hide-level)
 
-(add-to-list 'load-path "~/.emacs.d/plugins/bb-mode/")
+;(add-to-list 'load-path "~/.emacs.d/plugins/bb-mode/")
 
-(require 'bb-mode)
-(setq auto-mode-alist (cons '("\\.bb$" . bb-mode) auto-mode-alist))
-(setq auto-mode-alist (cons '("\\.inc$" . bb-mode) auto-mode-alist))
-(setq auto-mode-alist (cons '("\\.bbappend$" . bb-mode) auto-mode-alist))
-(setq auto-mode-alist (cons '("\\.bbclass$" . bb-mode) auto-mode-alist))
-(setq auto-mode-alist (cons '("\\.conf$" . bb-mode) auto-mode-alist))
+;(require 'bb-mode)
+;(setq auto-mode-alist (cons '("\\.bb$" . bb-mode) auto-mode-alist))
+;(setq auto-mode-alist (cons '("\\.inc$" . bb-mode) auto-mode-alist))
+;(setq auto-mode-alist (cons '("\\.bbappend$" . bb-mode) auto-mode-alist))
+;(setq auto-mode-alist (cons '("\\.bbclass$" . bb-mode) auto-mode-alist))
+;(setq auto-mode-alist (cons '("\\.conf$" . bb-mode) auto-mode-alist))
 
 ;(autoload 'octave-mode "octave-mod" nil t)
 (setq auto-mode-alist
@@ -126,7 +130,7 @@
 
 (add-hook 'after-init-hook 'global-company-mode)
 
-(company-quickhelp-mode)
+;(company-quickhelp-mode)
 
 (require 'yasnippet)
 (yas-global-mode 1)
@@ -181,12 +185,12 @@
 ;  :config
 ;  (add-hook 'flymake-mode-hook #'flymake-diagnostic-at-point-mode))
 
-(add-to-list 'load-path "~/.emacs.d/plugins/flymake-diagnostic-at-point/")
+;(add-to-list 'load-path "~/.emacs.d/plugins/flymake-diagnostic-at-point/")
 
 
-(eval-after-load 'flymake
-  '(require 'flymake-diagnostic-at-point))
-(add-hook 'flymake-mode-hook #'flymake-diagnostic-at-point-mode)
+;(eval-after-load 'flymake
+;  '(require 'flymake-diagnostic-at-point))
+;(add-hook 'flymake-mode-hook #'flymake-diagnostic-at-point-mode)
 
 ;; Auto refresh buffers
 (global-auto-revert-mode 1)
@@ -267,6 +271,7 @@
   :config
   ;; Enable evil-mode in all buffers.
   (evil-mode 1))
+
 ;;(modify-syntax-entry ?_ "w")
 (add-hook 'prog-mode-hook (lambda () (modify-syntax-entry ?_ "w")))
 (add-hook 'prog-mode-hook (lambda () (modify-syntax-entry ?- "w")))
@@ -304,7 +309,7 @@
 
 (add-to-list 'load-path (expand-file-name "~/.emacs.d/plugins/lazycat-theme"))
 					;(require 'lazycat-theme)
-(load-theme 'misteriso)
+;(load-theme 'misteriso)
 
 (use-package ace-window
   :ensure t
@@ -317,3 +322,11 @@
 	 ("M-O" . ace-swap-window)))
 
 (setq backup-directory-alist '(("" . "~/.emacs.d/backup")))
+
+(require 'org-tempo)
+
+
+(set-language-environment "UTF-8")
+
+(require 'org-bullets)
+(add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
