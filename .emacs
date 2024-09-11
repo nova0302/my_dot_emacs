@@ -25,6 +25,17 @@
 ;;disable splash screen and startup message
 (setq inhibit-startup-message t) 
 (setq initial-scratch-message nil)
+;(global-hl-line-mode -1)
+(defalias 'yes-or-no-p 'y-or-n-p)
+
+(tool-bar-mode -1)          ; Disable the toolbar
+(menu-bar-mode -1)            ; Disable the menu bar
+
+(require 'paren)
+(setq show-paren-style 'parenthesis)
+(show-paren-mode 1)
+(when (fboundp 'electric-pair-mode)
+  (electric-pair-mode))
 
 (setq user-full-name "Sanglae Kim"
       user-mail-address "nova0302@hotmail.com")
@@ -32,6 +43,15 @@
 (require 'package)
 (add-to-list 'package-archives '("melpa-stable" . "https://stable.melpa.org/packages/") t)
 (package-initialize)
+
+(unless package-archive-contents
+  (package-refresh-contents))
+
+(unless (package-installed-p 'use-package)
+  (package-install 'use-package))
+
+(require 'use-package)
+(setq use-package-always-ensure t)
 
 (require 'flymake)
 
@@ -75,7 +95,6 @@
   (global-set-key "\C-x\ \C-r" 'recentf-open-files)
   (recentf-mode t))
 
-(defalias 'yes-or-no-p 'y-or-n-p)
 
 (when (fboundp 'windmove-default-keybindings)
   (windmove-default-keybindings))
@@ -326,7 +345,16 @@
 (require 'org-tempo)
 
 
-(set-language-environment "UTF-8")
+;(set-language-environment "UTF-8")
 
 (require 'org-bullets)
 (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
+
+(require 'transpose-frame)
+
+(add-to-list 'load-path "~/.emacs.d/plugins/dts-mode-1.0/")
+(require'dts-mode)
+(add-to-list 'auto-mode-alist)
+
+(setq auto-mode-alist
+      (cons '("\\.dtsi$" . dts-mode) auto-mode-alist))
