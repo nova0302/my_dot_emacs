@@ -11,7 +11,7 @@
  '(help-at-pt-display-when-idle '(flymake-overlay) nil (help-at-pt))
  '(help-at-pt-timer-delay 0.9)
  '(package-selected-packages
-   '(org-bullets ace-window 0blayout magithub lsp-mode lua-mode transpose-frame scala-mode neotree magit ggtags helm flymake flymake-cursor yasnippet-snippets yasnippet company-quickhelp company smex idle-highlight-mode resize-window default-text-scale use-package dts-mode evil))
+   '(helm-gtags sr-speedbar helm-tramp org-bullets ace-window 0blayout magithub lsp-mode lua-mode transpose-frame scala-mode neotree magit ggtags helm flymake flymake-cursor yasnippet-snippets yasnippet company-quickhelp company smex idle-highlight-mode resize-window default-text-scale use-package dts-mode evil))
  '(warning-suppress-types '((comp) (comp))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -80,7 +80,9 @@
 (global-set-key (kbd "C--") 'default-text-scale-decrease)
 
 
-(setq backup-directory-alist '(("" . "~/.emacs.d/backup")))
+;(setq backup-directory-alist '(("" . "~/.emacs.d/backup")))
+(setq make-backup-files nil)
+(setq create-lockfiles nil)
 
 (setq compilation-ask-about-save nil)
 
@@ -99,14 +101,14 @@
 (when (fboundp 'windmove-default-keybindings)
   (windmove-default-keybindings))
 
-;(use-package sr-speedbar
-;  :custom
-;  ;; Show tree on the left side
-;  (sr-speedbar-right-side nil)
-;  ;; Show all files
-;  (speedbar-show-unknown-files t)
-;  ;; Bigger size (default is 24)
-;  (sr-speedbar-width 35))
+(use-package sr-speedbar
+  :custom
+  ;; Show tree on the left side
+  (sr-speedbar-right-side nil)
+  ;; Show all files
+  (speedbar-show-unknown-files t)
+  ;; Bigger size (default is 24)
+  (sr-speedbar-width 35))
 
 (global-set-key (kbd "<f3>") 'jpt-toggle-mark-word-at-point)
 
@@ -147,7 +149,7 @@
 ;     (define-key company-mode-map (kbd "C-:") 'helm-company)
 ;     (define-key company-active-map (kbd "C-:") 'helm-company)))
 
-(add-hook 'after-init-hook 'global-company-mode)
+;(add-hook 'after-init-hook 'global-company-mode)
 
 ;(company-quickhelp-mode)
 
@@ -266,14 +268,14 @@
 
 (desktop-save-mode 1)
 
-(use-package magit
-  :init
-  (message "Loading Magit!")
-  :config
-  (message "Loaded Magit!")
-  :bind (("C-x g" . magit-status)
-	 ("C-x C-g" . magit-status))
-  )
+;(use-package magit
+;  :init
+;  (message "Loading Magit!")
+;  :config
+;  (message "Loaded Magit!")
+;  :bind (("C-x g" . magit-status)
+;	 ("C-x C-g" . magit-status))
+;  )
 
 ;;;;(evil-mode)
 ;;(defalias 'forward-evil-word 'forward-evil-symbol)
@@ -354,7 +356,22 @@
 
 (add-to-list 'load-path "~/.emacs.d/plugins/dts-mode-1.0/")
 (require'dts-mode)
-(add-to-list 'auto-mode-alist)
+;(add-to-list 'auto-mode-alist)
 
 (setq auto-mode-alist
       (cons '("\\.dtsi$" . dts-mode) auto-mode-alist))
+
+(add-to-list 'load-path "~/.emacs.d/plugins/")
+(require 'resize-frame)
+
+;(add-hook 'gtags-mode-hook
+;          (lambda ()
+;            (local-set-key (kbd "M-]") 'gtags-find-tag)
+;            (local-set-key (kbd "M-[") 'gtags-find-rtag)))
+
+;(add-hook 'gtags-mode-hook
+;          (lambda ()
+;            (local-set-key (kbd "C-]") 'gtags-find-tag)
+;            (local-set-key (kbd "M-[") 'gtags-find-rtag)))
+(eval-after-load 'evil-maps
+  '(define-key evil-normal-state-map (kbd "M-.") nil))
