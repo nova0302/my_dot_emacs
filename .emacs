@@ -6,12 +6,13 @@
  '(auto-hide-compile-buffer-delay 3)
  '(company-auto-complete t)
  '(company-idle-delay 0.2)
+ '(company-insertion-on-trigger t)
  '(company-minimum-prefix-length 2)
  '(flymake-diagnostic-at-point-display-diagnostic-function 'flymake-diagnostic-at-point-display-minibuffer)
  '(help-at-pt-display-when-idle '(flymake-overlay) nil (help-at-pt))
  '(help-at-pt-timer-delay 0.9)
  '(package-selected-packages
-   '(helm-gtags sr-speedbar helm-tramp org-bullets ace-window 0blayout magithub lsp-mode lua-mode transpose-frame scala-mode neotree magit ggtags helm flymake flymake-cursor yasnippet-snippets yasnippet company-quickhelp company smex idle-highlight-mode resize-window default-text-scale use-package dts-mode evil))
+   '(tabbar helm-gtags sr-speedbar helm-tramp org-bullets ace-window 0blayout magithub lsp-mode lua-mode transpose-frame scala-mode neotree magit ggtags helm flymake flymake-cursor yasnippet-snippets yasnippet company-quickhelp company smex idle-highlight-mode resize-window default-text-scale use-package dts-mode evil))
  '(warning-suppress-types '((comp) (comp))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -375,3 +376,54 @@
 ;            (local-set-key (kbd "M-[") 'gtags-find-rtag)))
 (eval-after-load 'evil-maps
   '(define-key evil-normal-state-map (kbd "M-.") nil))
+
+;(setq ido-enable-flex-matching t)
+;(setq ido-everywhere t)
+;(ido-mode 1)
+
+(add-hook 'after-init-hook 'global-company-mode)
+(setq org-src-widow-setup 'other-window)
+
+(add-hook 'c-mode-hook '
+	  (lambda ()
+	    (c-set-style "bsd")
+	    (setq default-tab-width 2)
+	    (setq c-basic-offset 2) ;; indent use only 2 blank
+	    (setq indent-tabs-mode nil) ;; no tab
+	    ))
+
+(add-hook 'compilation-start-hook 'compilation-started)
+(add-hook 'compilation-finish-functions 'hide-compile-buffer-if-successful)
+
+(defcustom auto-hide-compile-buffer-delay 0
+  "Time in seconds before auto hiding compile buffer."
+  :group 'compilation
+  :type 'number
+  )
+
+(defun hide-compile-buffer-if-successful (buffer string)
+  (setq compilation-total-time (time-subtract nil compilation-start-time))
+  (setq time-str (concat " (Time: " (format-time-string "%s.%3N" compilation-total-time) "s)"))
+
+  (if
+      (with-current-buffer buffer
+	(setq warnings (eval compilation-num-warnings-found))
+	(setq warnings-str (concat " (Warnings: " (number-to-string warnings) ")"))
+	(setq errors (eval compilation-num-errors-found))
+
+	(if (eq errors 0) nil t)
+	)
+
+      ;;If Errors then
+      (message (concat "Compiled with Errors" warnings-str time-str))
+
+    ;;If Compiled Successfully or with Warnings then
+    (progn
+      (bury-buffer buffer)
+      (run-with-timer auto-hide-compile-buffer-delay nil 'delete-window (get-buffer-window buffer 'visible))
+      (message (concat "Compiled Successfully" warnings-str time-str)))))
+
+(make-variable-buffer-local 'compilation-start-time)
+
+(defun compilation-started (proc) 
+  (setq compilation-start-time (current-time)))
