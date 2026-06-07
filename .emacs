@@ -59,17 +59,17 @@
 (setq dired-listing-switches "-alh --group-directories-first")
 (setq dired-dwim-target t)
 
-(use-package helm
-  :ensure t
-  :demand
-  :bind (("M-x" . helm-M-x)
-         ("C-x C-f" . helm-find-files)
-         ("C-x b" . helm-buffers-list)
-         ("C-x c o" . helm-occur)) ;SC
-  ("M-y" . helm-show-kill-ring) ;SC
-  ("C-x r b" . helm-filtered-bookmarks) ;SC
-;;;  :preface (require 'helm-config)
-  :config (helm-mode 1))
+;(use-package helm
+;  :ensure t
+;  :demand
+;  :bind (("M-x" . helm-M-x)
+;         ("C-x C-f" . helm-find-files)
+;         ("C-x b" . helm-buffers-list)
+;         ("C-x c o" . helm-occur)) ;SC
+;  ("M-y" . helm-show-kill-ring) ;SC
+;  ("C-x r b" . helm-filtered-bookmarks) ;SC
+;;;;  :preface (require 'helm-config)
+;  :config (helm-mode 1))
 
 (add-hook 'prog-mode-hook #'hs-minor-mode)
 
@@ -363,7 +363,7 @@
       (cons '("\\.dtsi$" . dts-mode) auto-mode-alist))
 
 (add-to-list 'load-path "~/.emacs.d/plugins/")
-(require 'resize-frame)
+;(require 'resize-frame)
 
 ;(add-hook 'gtags-mode-hook
 ;          (lambda ()
@@ -427,3 +427,23 @@
 
 (defun compilation-started (proc) 
   (setq compilation-start-time (current-time)))
+
+(use-package ivy :ensure t
+  :diminish (ivy-mode . "")
+  :bind
+  (:map ivy-mode-map
+   ("C-'" . ivy-avy))
+  :config
+  (ivy-mode 1)
+  ;; add ‘recentf-mode’ and bookmarks to ‘ivy-switch-buffer’.
+  (setq ivy-use-virtual-buffers t)
+  ;; number of result lines to display
+  (setq ivy-height 10)
+  ;; does not count candidates
+  (setq ivy-count-format "")
+  ;; no regexp by default
+  (setq ivy-initial-inputs-alist nil)
+  ;; configure regexp engine.
+  (setq ivy-re-builders-alist
+	;; allow input not in order
+        '((t   . ivy--regex-ignore-order))))
