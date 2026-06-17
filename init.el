@@ -1,10 +1,3 @@
-;;; init.el --- Emacs 31 Modern Native Intellisense Configuration -*- lexical-binding: t; -*-
-
-;; =============================================================================
-;; 1. BOOTSTRAP PACKAGE MANAGER (straight.el)
-;; =============================================================================
-(setq package-enable-at-startup nil)
-
 (defvar bootstrap-version)
 (let ((bootstrap-file
        (expand-file-name
@@ -21,176 +14,213 @@
       (eval-print-last-sexp)))
   (load bootstrap-file nil 'nomessage))
 
-;; Integrate straight.el natively into use-package
-(straight-use-package 'use-package)
-(setq straight-use-package-by-default t) ; Eliminates the need to type :straight t on every package
+;; Place this immediately after your straight.el bootstrap block
+(use-package project
+  :straight t
+  :demand t)
 
-;; =============================================================================
-;; 2. CLEAN USER INTERFACE & GENERAL CONFIGURATION
-;; =============================================================================
-(set-face-attribute 'default nil 
-                    :font "DejaVu Sans Mono"
-                    :height 150 
-                    :weight 'regular)
-
-(menu-bar-mode -1)
-(tool-bar-mode -1)
-(scroll-bar-mode -1)
-(load-theme 'misterioso t)
-
-(setq inhibit-startup-screen t)
-(setq make-backup-files nil)
-(setq dired-dwim-target t)
-
-(recentf-mode t)
+;;; --- General Settings ---
 (desktop-save-mode 1)
-
-(when (fboundp 'windmove-default-keybindings)
-  (windmove-default-keybindings))
-
-;; Code folding initialization
+(recentf-mode 1)
+(electric-pair-mode 1)
+(setq dired-dwim-target t)
+(setq electric-pair-preserve-balance nil)
+(setq recentf-max-saved-items 50)
+(setq compilation-ask-about-save nil)
+(setq initial-buffer-choice 'recentf-open-files)
+(windmove-default-keybindings)
 (add-hook 'prog-mode-hook 'hs-minor-mode)
 
-;; =============================================================================
-;; 3. NATIVE CODE INTERPRETATION (Tree-sitter)
-;; =============================================================================
-(use-package treesit
-  :straight (:type built-in)
-  :config
-  ;; Correct full URLs for automated compilation via `M-x treesit-install-language-grammar`
-  (setq treesit-language-source-alist
-        '((bash "https://github.com")
-          (cmake "https://github.com")
-          (css "https://github.com")
-          (elisp "https://github.com")
-          (go "https://github.com")
-          (html "https://github.com")
-          (javascript "https://github.com" "master" "src")
-          (json "https://github.com")
-          (make "https://github.com")
-          (markdown "https://github.com" "main" "tree-sitter-markdown/src")
-          (python "https://github.com")
-          (rust "https://github.com")
-          (toml "https://github.com")
-          (tsx "https://github.com" "master" "tsx/src")
-          (typescript "https://github.com" "master" "typescript/src")
-          (yaml "https://github.com")))
+(straight-use-package 'use-package)
+;(straight-use-package 'evil)
+(straight-use-package 'magit)
+;(straight-use-package 'evil-collection)
+;(straight-use-package 'company)
+(straight-use-package 'treemacs)
 
-  ;; Automatically remap standard programming modes to their modern Tree-sitter counterparts
-  (setq major-mode-remap-alist
-        '((bash-mode . bash-ts-mode)
-          (c-mode . c-ts-mode)
-          (c++-mode . c++-ts-mode)
-          (cmake-mode . cmake-ts-mode)
-          (python-mode . python-ts-mode))))
-
-;; =============================================================================
-;; 4. CORE ENGINE COMPLETION & INTELLISENSE (Eglot, Corfu, Orderless)
-;; =============================================================================
-(use-package eglot
-  :straight (:type built-in)
-  :hook
-  ((python-ts-mode . eglot-ensure)
-   (c-ts-mode . eglot-ensure)
-   (c++-ts-mode . eglot-ensure))
-  :bind
-  (:map eglot-mode-map
-        ("M-." . xref-find-definitions)
-        ("M-," . xref-go-back)
-        ("C-c c r" . eglot-rename)
-        ("C-c c a" . eglot-code-actions)
-        ("C-c c f" . eglot-format-buffer))
-  :config
-  (setq eglot-autoshutdown t)
-  (setq eglot-events-buffer-size 0))
-
-(use-package corfu
-  :init
-  (global-corfu-mode)
-  :custom
-  (corfu-auto t)
-  (corfu-auto-delay 0.1)
-  (corfu-auto-prefix 2)
-  (corfu-cycle t)
-  :bind
-  (:map corfu-map
-        ("TAB" . corfu-next)
-        ([tab] . corfu-next)
-        ("S-TAB" . corfu-previous)
-        ([backtab] . corfu-previous)
-        ("RET" . corfu-insert)))
-
-(use-package orderless
-  :custom
-  (completion-styles '(orderless basic))
-  (completion-category-overrides '((file (styles basic partial-completion)))))
-
-(use-package yasnippet
-  :config
-  (yas-global-mode 1))
-
-;; =============================================================================
-;; 5. NAVIGATION & KEYBOARD CONTROL (Evil Mode, Smex, Projectile)
-;; =============================================================================
-(use-package undo-fu)
-
+;;; --- Evil Mode Configuration with straight.el ---
 (use-package evil
-  :demand t
+  :straight t
   :init
-  (setq evil-undo-system 'undo-fu)
+  ;; Pre-emptive configuration variables must be set BEFORE evil loads
+  (setq evil-want-integration t)
+  (setq evil-want-keybinding nil) ; Crucial for evil-collection compatibility
+  (setq evil-symbol-word-search t) ; Makes * and # search look for whole symbols
+  
   :config
+  ;; Enable Evil globally
   (evil-mode 1)
-  ;; Restore native LSP jump points inside Evil State if you choose to uncomment them
-  (with-eval-after-load 'eglot
-    (with-eval-after-load 'evil
-      (evil-define-key 'normal eglot-mode-map
-        (kbd "gd") 'xref-find-definitions
-        (kbd "gD") 'xref-find-definitions-other-window
-        (kbd "C-t") 'xref-pop-marker-stack))))
+  
+  ;; Custom normal-state keybindings
+  (with-eval-after-load 'evil-maps
+    (define-key evil-normal-state-map (kbd "M-.") 'xref-find-definitions)))
+
+;;; --- Global Syntax Modifications ---
+;; Treat underscores as word characters in code and text modes
+(add-hook 'prog-mode-hook
+          (lambda () (modify-syntax-entry ?_ "w")))
+
+(add-hook 'text-mode-hook
+          (lambda () (modify-syntax-entry ?_ "w")))
+
+(use-package evil-collection
+  :straight t
+;  :ensure t
+  :after evil
+  :init
+  (evil-collection-init '(dired)))
+
+(with-eval-after-load 'evil-collection
+  (evil-collection-define-key 'normal 'dired-mode-map (kbd "o") 'dired-find-file-other-window))
+
+
+;;; --- Completion ---
+(use-package company
+  :straight t
+;  :ensure t
+  :init (global-company-mode)
+  :custom
+  (company-idle-delay 0.1)
+  (company-minimum-prefix-length 1)
+  (company-tooltip-limit 10)
+  :config
+  (add-hook 'eglot-managed-mode-hook
+            (lambda ()
+              (add-to-list 'company-backends 'company-capf))))
+
+(use-package treemacs
+  :straight t
+;  :ensure t
+  :defer t
+  :config
+  (treemacs-git-mode 'simple)
+  :bind (:map global-map
+              ([f5] . treemacs)))
+
+;;; --- Python ---
+(use-package pyvenv
+  :straight t
+;  :ensure t
+  :config
+  (pyvenv-mode 1))
+
+;;; --- Tree-sitter ---
+
+
+;;; --- Built-in Tree-sitter Configuration ---
+
+(use-package treesit
+  :straight (:type built-in) ; Explicitly tells straight.el this package is core
+  :mode (("\\.cpp\\'" . c++-ts-mode)
+         ("\\.hpp\\'" . c++-ts-mode)
+         ("\\.c\\'"   . c-ts-mode)
+         ("\\.h\\'"   . c-ts-mode))
+  :config
+  ;; Define where Emacs should look for compiled grammar libraries
+  (setq treesit-extra-load-path (list (expand-file-name "tree-sitter" straight-base-dir)))
+  
+  ;; Control the density of syntax highlighting (Levels 1 to 4)
+  (setq treesit-font-lock-level 4))
+
+(use-package treesit-auto
+  :straight t
+  :after treesit
+  :config
+  (setq treesit-auto-install 'prompt)
+  ;; Automatically use treesit major modes (like python-ts-mode) over legacy modes
+  (global-treesit-auto-mode 1)
+  
+  ;; Optional: Force compile and install all available language grammars on startup
+  ;; (treesit-auto-install-all)
+  )
+
+(setq treesit-language-source-alist
+      '((cpp "https://github.com/tree-sitter/tree-sitter-cpp")
+        (c   "https://github.com/tree-sitter/tree-sitter-c")))
+
+(setq treesit-load-name-override-list '((c++ "libtree-sitter-cpp")))
+
+(setq major-mode-remap-alist
+      '((c-mode          . c-ts-mode)
+        (c++-mode        . c++-ts-mode)
+        (c-or-c++-mode   . c-or-c++-ts-mode)
+        (python-mode     . python-ts-mode)))
+
+;;; --- Eglot (LSP) ---
+(use-package eglot
+  :straight t
+;  :ensure nil
+  :hook ((python-ts-mode . eglot-ensure)
+         (c-ts-mode      . eglot-ensure)
+         (c++-ts-mode    . eglot-ensure))
+  :config
+  (dolist (server '(((c-ts-mode c++-ts-mode) . ("clangd" "--header-insertion=never"))
+                    (python-mode             . ("pyright-langserver" "--stdio"))))
+    (add-to-list 'eglot-server-programs server))
+  (setq eglot-events-buffer-size 0)
+  (setq-default eldoc-documentation-strategy #'eldoc-documentation-compose-eagerly))
+
+(with-eval-after-load 'eglot
+  (define-key eglot-mode-map (kbd "C-c d") #'eglot-find-implementation))
+
+(use-package eldoc-box
+  :straight t
+  :hook (eglot-managed-mode . eldoc-box-hover-mode))
+
+;;; --- default text scale  ---
+(use-package default-text-scale
+  :straight t
+  :config
+  ;; Automatically activate the global minor mode
+  (default-text-scale-mode 1)
+  
+  ;; Bind the scale adjustment keys specifically for Evil Normal State
+  (with-eval-after-load 'evil-maps
+    (define-key evil-normal-state-map (kbd "C-=") 'default-text-scale-increase)
+    (define-key evil-normal-state-map (kbd "C--") 'default-text-scale-decrease)
+    (define-key evil-normal-state-map (kbd "C-0") 'default-text-scale-reset)))
+
+;;; --- transpose frame  ---
+(use-package transpose-frame
+  :straight t
+;  :ensure t
+  :bind(("C-c f t" . transpose-frame)))
+
+;;; --- Traditional Scala Configuration ---
+
+(use-package scala-mode
+  :straight t
+  :interpreter ("scala" . scala-mode)
+  :config
+  ;; Ensure underscores treat as words within Scala buffers as well
+  (add-hook 'scala-mode-hook
+            (lambda () (modify-syntax-entry ?_ "w"))))
+
+(use-package sbt-mode
+  :straight t
+  :commands sbt-start sbt-command
+  :config
+  ;; Settings to handle compiler buffers and ansi colors correctly
+  (setq sbt:program-name "sbt"))
 
 (use-package smex
+  :straight t
   :init
-  (smex-initialize)
-  :bind
-  (("M-x" . smex)
-   ("M-X" . smex-major-mode-commands)
-   ("C-c C-c M-x" . execute-extended-command)))
-
-(use-package projectile
-  :init
-  (projectile-mode +1)
-  :bind-keymap
-  ("C-c p" . projectile-command-map))
-
-(use-package magit
-  :bind (("C-x g" . magit-status)
-         ("C-x C-g" . magit-status))
+  ;; Smex requires ido to function as its filtering backend
+  (ido-mode 1)
   :config
-  ;; Optional: If you want Magit to play nicely with Evil keys
-  ;; (straight-use-package 'evil-collection)
-  )
-;; =============================================================================
-;; 6. TRANSIENT WIDGET INTERFACES (Hydra)
-;; =============================================================================
-(use-package hydra)
+  ;; Initialize Smex command tracking
+  (smex-initialize)
+  
+  ;; Global keybindings to replace standard execution menus
+  (global-set-key (kbd "M-x") 'smex)
+  (global-set-key (kbd "M-X") 'smex-major-mode-commands))
 
-(defhydra hydra-zoom (:color red :hint nil)
-  "
-  Zoom: _g_/_+_ (In)  _l_/_-_ (Out)  _r_/_0_ (Reset)  _q_ (Quit)
-  "
-  ("g" global-text-scale-adjust "in")
-  ("+" global-text-scale-adjust)
-  ("l" (global-text-scale-adjust -1) "out")
-  ("-" (global-text-scale-adjust -1))
-  ("r" (global-text-scale-adjust 0) "reset")
-  ("0" (global-text-scale-adjust 0))
-  ("q" nil "quit" :exit t))
-
-;; =============================================================================
-;; 7. GLOBAL CORE KEYBINDINGS
-;; =============================================================================
-(global-set-key (kbd "<f4>") 'hydra-zoom/body)
-(global-set-key (kbd "<f5>") 'dired)
+;;; --- Keybindings ---
+(global-set-key (kbd "C-x C-r") 'recentf-open-files)
+;(global-set-key (kbd "<C-tab>") 'tab-line-switch-to-next-tab)
+;(global-set-key (kbd "<C-S-iso-lefttab>") 'tab-line-switch-to-prev-tab)
 (global-set-key (kbd "<f6>") 'smex)
 (global-set-key (kbd "<f7>") 'compile)
 (global-set-key (kbd "<f9>") 'hs-toggle-hiding)
+
