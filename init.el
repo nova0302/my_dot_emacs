@@ -14,12 +14,15 @@
       (eval-print-last-sexp)))
   (load bootstrap-file nil 'nomessage))
 
+(straight-use-package 'use-package)
+
 ;; Place this immediately after your straight.el bootstrap block
 (use-package project
   :straight t
   :demand t)
 
 ;;; --- General Settings ---
+(defalias 'yes-or-no-p 'y-or-n-p)
 (desktop-save-mode 1)
 (recentf-mode 1)
 (electric-pair-mode 1)
@@ -32,11 +35,7 @@
 (add-hook 'prog-mode-hook 'hs-minor-mode)
 
 (straight-use-package 'use-package)
-;(straight-use-package 'evil)
 (straight-use-package 'magit)
-;(straight-use-package 'evil-collection)
-;(straight-use-package 'company)
-(straight-use-package 'treemacs)
 
 ;;; --- Evil Mode Configuration with straight.el ---
 (use-package evil
@@ -65,7 +64,6 @@
 
 (use-package evil-collection
   :straight t
-;  :ensure t
   :after evil
   :init
   (evil-collection-init '(dired)))
@@ -74,98 +72,144 @@
   (evil-collection-define-key 'normal 'dired-mode-map (kbd "o") 'dired-find-file-other-window))
 
 
-;;; --- Completion ---
-(use-package company
+;; 1. Configure Corfu for the completion pop-up interface
+(use-package corfu
   :straight t
-;  :ensure t
-  :init (global-company-mode)
+  ;; Optional: Uses 'child-frames' for cleaner graphics (recommended)
+  :init
+  (global-corfu-mode)
   :custom
-  (company-idle-delay 0.1)
-  (company-minimum-prefix-length 1)
-  (company-tooltip-limit 10)
-  :config
-  (add-hook 'eglot-managed-mode-hook
-            (lambda ()
-              (add-to-list 'company-backends 'company-capf))))
+  (corfu-auto t)                 ;; Enable auto-completion as you type
+  (corfu-auto-delay 0.1)         ;; Short delay before pop-up appears (seconds)
+  (corfu-auto-prefix 1)          ;; Show suggestions after typing just 1 character
+  (corfu-quit-at-boundary 'separator) ;; Handle spacing nicely with Orderless
+  (corfu-quit-no-match t)        ;; Close the popup if nothing matches
+  :bind
+  (:map corfu-map
+        ("TAB" . corfu-next)     ;; Use TAB to cycle down choices
+        ([tab] . corfu-next)
+        ("S-TAB" . corfu-previous) ;; Use Shift+TAB to cycle up
+        ([backtab] . corfu-previous)
+        ("<return>" . corfu-insert))) ;; Press Enter to commit selection
+
+;; 2. Seamlessly link Eglot and Corfu for C mode
+;;;(use-package eglot
+;;;  :ensure t
+;;;  :hook
+;;;  (c-mode . eglot-ensure)        ;; Automatically start Eglot in C files
+;;;  :config
+;;;  ;; Tell Eglot to feed Corfu high-priority, contextual code data
+;;;  (setq-default eglot-workspace-configuration
+;;;                '((:clangd . (:completion (:detailedLabel t))))))
+
+;;; --- Completion ---
+;;;(use-package company
+;;;  :straight t
+;;;  :init (global-company-mode)
+;;;  :custom
+;;;  (company-idle-delay 0.1)
+;;;  (company-minimum-prefix-length 1)
+;;;  (company-tooltip-limit 10)
+;;;  :config
+;;;  (add-hook 'eglot-managed-mode-hook
+;;;            (lambda ()
+;;;              (add-to-list 'company-backends 'company-capf))))
 
 (use-package treemacs
   :straight t
-;  :ensure t
   :defer t
   :config
   (treemacs-git-mode 'simple)
   :bind (:map global-map
               ([f5] . treemacs)))
 
-;;; --- Python ---
-(use-package pyvenv
-  :straight t
-;  :ensure t
-  :config
-  (pyvenv-mode 1))
+;;; ==========================================
+;;; --- Core Project & File System Settings ---
+;;; ==========================================
 
-;;; --- Tree-sitter ---
+;; CRITICAL: Block Emacs from watching massive dependency folders globally.
+;; This stops Eglot/Project from scanning virtual environments even if Git is missing.
+(with-eval-after-load 'vc
+  (setq vc-directory-exclusion-list
+        (append '("venv" ".venv" "__pycache__" ".pytest_cache" "node_modules" ".git" "build")
+                vc-directory-exclusion-list)))
+
+(with-eval-after-load 'project
+  (setq project-vc-ignores '("venv/" ".venv/" "__pycache__/" ".pytest_cache/" "build/")))
 
 
-;;; --- Built-in Tree-sitter Configuration ---
+;;; ==========================================
+;;; --- Tree-sitter Configuration ------------
+;;; ==========================================
 
 (use-package treesit
-  :straight (:type built-in) ; Explicitly tells straight.el this package is core
-  :mode (("\\.cpp\\'" . c++-ts-mode)
-         ("\\.hpp\\'" . c++-ts-mode)
-         ("\\.c\\'"   . c-ts-mode)
-         ("\\.h\\'"   . c-ts-mode))
+  :straight (:type built-in) ; Uses the core Emacs engine
   :config
-  ;; Define where Emacs should look for compiled grammar libraries
+  ;; Where to save compiled language grammar binaries
   (setq treesit-extra-load-path (list (expand-file-name "tree-sitter" straight-base-dir)))
   
-  ;; Control the density of syntax highlighting (Levels 1 to 4)
-  (setq treesit-font-lock-level 4))
+  ;; Maximum syntax highlighting richness (Levels 1 to 4)
+  (setq treesit-font-lock-level 4)
+  
+  ;; Remap legacy major modes to modern Tree-sitter modes automatically
+  (setq major-mode-remap-alist
+        '((c-mode          . c-ts-mode)
+          (c++-mode        . c++-ts-mode)
+          (c-or-c++-mode   . c-or-c++-ts-mode)
+          (python-mode     . python-ts-mode))))
 
 (use-package treesit-auto
   :straight t
   :after treesit
   :config
+  ;; Tells treesit-auto to prompt you to download a parser if it is missing
   (setq treesit-auto-install 'prompt)
-  ;; Automatically use treesit major modes (like python-ts-mode) over legacy modes
   (global-treesit-auto-mode 1)
   
-  ;; Optional: Force compile and install all available language grammars on startup
-  ;; (treesit-auto-install-all)
-  )
+  ;; Sources for the C, C++, and Python grammars
+  (setq treesit-language-source-alist
+        '((c      "https://github.com/tree-sitter/tree-sitter-c")
+          (cpp    "https://github.com/tree-sitter/tree-sitter-cpp")
+          (python "https://github.com/tree-sitter/tree-sitter-python"))))
 
-(setq treesit-language-source-alist
-      '((cpp "https://github.com/tree-sitter/tree-sitter-cpp")
-        (c   "https://github.com/tree-sitter/tree-sitter-c")))
 
-(setq treesit-load-name-override-list '((c++ "libtree-sitter-cpp")))
+;;; ==========================================
+;;; --- Eglot (LSP) Configuration -----------
+;;; ==========================================
 
-(setq major-mode-remap-alist
-      '((c-mode          . c-ts-mode)
-        (c++-mode        . c++-ts-mode)
-        (c-or-c++-mode   . c-or-c++-ts-mode)
-        (python-mode     . python-ts-mode)))
+;;; --- Python Tree-Sitter & Pyright Integration ---
 
-;;; --- Eglot (LSP) ---
 (use-package eglot
   :straight t
-;  :ensure nil
-  :hook ((python-ts-mode . eglot-ensure)
-         (c-ts-mode      . eglot-ensure)
-         (c++-ts-mode    . eglot-ensure))
+  ;; Automatically trigger Eglot whenever a Tree-sitter Python buffer opens
+  :hook (python-ts-mode . eglot-ensure)
   :config
-  (dolist (server '(((c-ts-mode c++-ts-mode) . ("clangd" "--header-insertion=never"))
-                    (python-mode             . ("pyright-langserver" "--stdio"))))
-    (add-to-list 'eglot-server-programs server))
-  (setq eglot-events-buffer-size 0)
-  (setq-default eldoc-documentation-strategy #'eldoc-documentation-compose-eagerly))
+  ;; 1. Register pyright-langserver explicitly to python-ts-mode
+  (setq eglot-server-programs
+        (append '((python-ts-mode . ("pyright-langserver" "--stdio")))
+                eglot-server-programs))
 
-(with-eval-after-load 'eglot
-  (define-key eglot-mode-map (kbd "C-c d") #'eglot-find-implementation))
+  ;; 2. Optimize response times and logging footprints
+  (setq eglot-events-buffer-size 0)           ; Save memory bandwidth
+  (setq eglot-autoreconnect nil)              ; Disable auto-reconnect to prevent infinite crash-loops
+  (setq eglot-max-file-watches 100000)
 
-(use-package eldoc-box
+  ;; 3. Configure Pyright Workspace Options Globally
+  (setq-default eglot-workspace-configuration
+                '(:python (:analysis (:autoSearchPaths t
+                                      :useLibraryCodeForTypes t
+                                      :diagnosticMode "openFilesOnly"
+                                      :exclude [".venv" "venv" "node_modules"
+                                                "__pycache__" "build" "dist"])
+                           :venvPath "."
+                           :venv ".venv"))))
+
+
+(use-package exec-path-from-shell
   :straight t
-  :hook (eglot-managed-mode . eldoc-box-hover-mode))
+  :config
+  ;; Force Emacs to copy the exact $PATH variable from your terminal shell
+  (exec-path-from-shell-initialize))
 
 ;;; --- default text scale  ---
 (use-package default-text-scale
@@ -203,24 +247,64 @@
   ;; Settings to handle compiler buffers and ansi colors correctly
   (setq sbt:program-name "sbt"))
 
-(use-package smex
+;;;(use-package smex
+;;;  :straight t
+;;;  :init
+;;;  ;; Smex requires ido to function as its filtering backend
+;;;  (ido-mode 1)
+;;;  :config
+;;;  ;; Initialize Smex command tracking
+;;;  (smex-initialize)
+;;;  
+;;;  ;; Global keybindings to replace standard execution menus
+;;;  (global-set-key (kbd "M-x") 'smex)
+;;;  (global-set-key (kbd "M-X") 'smex-major-mode-commands))
+
+(use-package amx
   :straight t
-  :init
-  ;; Smex requires ido to function as its filtering backend
-  (ido-mode 1)
   :config
-  ;; Initialize Smex command tracking
-  (smex-initialize)
-  
-  ;; Global keybindings to replace standard execution menus
-  (global-set-key (kbd "M-x") 'smex)
-  (global-set-key (kbd "M-X") 'smex-major-mode-commands))
+  (amx-initialize)
+  (amx-mode 1)
+  :bind
+  (("M-x" . amx)
+   ("M-X" . amx-major-mode-commands)
+   ;; To use the traditional, unenhanced Emacs M-x if needed:
+   ("C-c C-c M-x" . execute-extended-command)))
+
+;;; --- yasnippet ---
+
+;; Install and configure the core snippet engine
+(use-package yasnippet
+  :straight t
+  :config
+  ;; Enable snippets globally across all major modes
+  (yas-global-mode 1))
+
+;; Install the community repository of snippets
+(use-package yasnippet-snippets
+  :straight t
+  :after yasnippet
+  :config
+  ;; Reload all snippet definitions to make sure they are active
+  (yas-reload-all))
+
+(add-hook 'c-mode-hook #'hide-ifdef-mode)
+(add-hook 'c++-mode-hook #'hide-ifdef-mode)
+(add-hook 'c-ts-mode-hook #'hide-ifdef-mode)
+(add-hook 'c++-ts-mode-hook #'hide-ifdef-mode)
+(add-hook 'verilog-mode-hook #'hide-ifdef-mode)
+
+(defun my-compile-no-ask ()
+  "Compile the project immediately without prompting to save or confirm."
+  (interactive)
+  (let ((compilation-ask-about-save nil)) ;; Don't ask to save files
+    (compile compile-command)))          ;; Run using the last set compile command
 
 ;;; --- Keybindings ---
 (global-set-key (kbd "C-x C-r") 'recentf-open-files)
-;(global-set-key (kbd "<C-tab>") 'tab-line-switch-to-next-tab)
-;(global-set-key (kbd "<C-S-iso-lefttab>") 'tab-line-switch-to-prev-tab)
-(global-set-key (kbd "<f6>") 'smex)
-(global-set-key (kbd "<f7>") 'compile)
+;(global-set-key (kbd "<f6>") 'smex)
+(global-set-key (kbd "<f6>") 'amx)
+;(global-set-key (kbd "<f7>") 'compile)
+(global-set-key (kbd "<f7>") 'my-compile-no-ask)
 (global-set-key (kbd "<f9>") 'hs-toggle-hiding)
 
