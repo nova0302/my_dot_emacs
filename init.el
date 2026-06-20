@@ -300,6 +300,12 @@
   (let ((compilation-ask-about-save nil)) ;; Don't ask to save files
     (compile compile-command)))          ;; Run using the last set compile command
 
+(setq display-buffer-alist
+      (cons '("\\*compilation\\*"
+              (display-buffer-reuse-window display-buffer-below-selected)
+              (window-height . 15)) ;; Change 15 to your preferred number of lines
+            display-buffer-alist))
+
 ;;; --- Keybindings ---
 (global-set-key (kbd "C-x C-r") 'recentf-open-files)
 ;(global-set-key (kbd "<f6>") 'smex)
