@@ -1,15 +1,15 @@
 (defvar bootstrap-version)
 (let ((bootstrap-file
        (expand-file-name
-        "straight/repos/straight.el/bootstrap.el"
-        (or (bound-and-true-p straight-base-dir)
-            user-emacs-directory)))
+	"straight/repos/straight.el/bootstrap.el"
+	(or (bound-and-true-p straight-base-dir)
+	    user-emacs-directory)))
       (bootstrap-version 7))
   (unless (file-exists-p bootstrap-file)
     (with-current-buffer
-        (url-retrieve-synchronously
-         "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
-         'silent 'inhibit-cookies)
+	(url-retrieve-synchronously
+	 "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
+	 'silent 'inhibit-cookies)
       (goto-char (point-max))
       (eval-print-last-sexp)))
   (load bootstrap-file nil 'nomessage))
@@ -70,7 +70,6 @@
 
 (with-eval-after-load 'evil-collection
   (evil-collection-define-key 'normal 'dired-mode-map (kbd "o") 'dired-find-file-other-window))
-
 
 ;; 1. Configure Corfu for the completion pop-up interface
 (use-package corfu
@@ -137,7 +136,6 @@
 (with-eval-after-load 'project
   (setq project-vc-ignores '("venv/" ".venv/" "__pycache__/" ".pytest_cache/" "build/")))
 
-
 ;;; ==========================================
 ;;; --- Tree-sitter Configuration ------------
 ;;; ==========================================
@@ -172,7 +170,6 @@
           (cpp    "https://github.com/tree-sitter/tree-sitter-cpp")
           (python "https://github.com/tree-sitter/tree-sitter-python"))))
 
-
 ;;; ==========================================
 ;;; --- Eglot (LSP) Configuration -----------
 ;;; ==========================================
@@ -197,12 +194,12 @@
   ;; 3. Configure Pyright Workspace Options Globally
   (setq-default eglot-workspace-configuration
                 '(:python (:analysis (:autoSearchPaths t
-                                      :useLibraryCodeForTypes t
-                                      :diagnosticMode "openFilesOnly"
-                                      :exclude [".venv" "venv" "node_modules"
-                                                "__pycache__" "build" "dist"])
-                           :venvPath "."
-                           :venv ".venv"))))
+						       :useLibraryCodeForTypes t
+						       :diagnosticMode "openFilesOnly"
+						       :exclude [".venv" "venv" "node_modules"
+								 "__pycache__" "build" "dist"])
+				     :venvPath "."
+				     :venv ".venv"))))
 
 
 (use-package exec-path-from-shell
@@ -227,7 +224,7 @@
 ;;; --- transpose frame  ---
 (use-package transpose-frame
   :straight t
-;  :ensure t
+					;  :ensure t
   :bind(("C-c f t" . transpose-frame)))
 
 ;;; --- Traditional Scala Configuration ---
@@ -347,11 +344,17 @@ called hs-grok-mode-type — so these setq-locals take precedence."
               (window-height . 15)) ;; Change 15 to your preferred number of lines
             display-buffer-alist))
 
+(use-package claude-code-ide
+  :straight (:type git :host github :repo "manzaltu/claude-code-ide.el")
+  :bind ("C-c C-'" . claude-code-ide-menu) ; Set your favorite keybinding
+  :config
+  (claude-code-ide-emacs-tools-setup)) ; Optionally enable Emacs MCP tools
+
 ;;; --- Keybindings ---
 (global-set-key (kbd "C-x C-r") 'recentf-open-files)
-;(global-set-key (kbd "<f6>") 'smex)
+					;(global-set-key (kbd "<f6>") 'smex)
 (global-set-key (kbd "<f6>") 'amx)
-;(global-set-key (kbd "<f7>") 'compile)
+					;(global-set-key (kbd "<f7>") 'compile)
 (global-set-key (kbd "<f7>") 'my-compile-no-ask)
 (global-set-key (kbd "<f9>") 'hs-toggle-hiding)
 
