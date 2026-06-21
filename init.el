@@ -294,6 +294,47 @@
 (add-hook 'c++-ts-mode-hook #'hide-ifdef-mode)
 (add-hook 'verilog-mode-hook #'hide-ifdef-mode)
 
+;;; --- hs-minor-mode: fold #if/#else and #else/#endif as separate regions ---
+(defun my-c-hs-forward-sexp (_arg)
+  "Navigate past a brace block or preprocessor conditional for hideshow.
+Stops at #else/#elif at the current nesting level so each branch
+is independently foldable."
+  (if (eq (char-before) ?{)
+      (progn (backward-char) (forward-sexp))
+    (let ((depth 1) done)
+      (beginning-of-line 2)
+      (while (not done)
+        (when (eobp) (error "Unbalanced preprocessor block"))
+        (cond
+         ((looking-at "[[:space:]]*#[[:space:]]*if")
+          (cl-incf depth)
+          (forward-line 1))
+         ((looking-at "[[:space:]]*\\(#[[:space:]]*endif\\)")
+          (cl-decf depth)
+          (if (> depth 0)
+              (forward-line 1)
+            (goto-char (match-end 1))
+            (setq done t)))
+         ((and (= depth 1)
+               (looking-at "[[:space:]]*\\(#[[:space:]]*\\(?:else\\|elif\\)\\)"))
+          (goto-char (match-end 1))
+          (setq done t))
+         (t (forward-line 1)))))))
+
+(defun my-c-hs-init ()
+  "Set buffer-local hideshow vars so #if/#else and #else/#endif fold separately.
+Runs in C/C++ mode hooks, after hs-minor-mode (prog-mode-hook) has already
+called hs-grok-mode-type — so these setq-locals take precedence."
+  (setq-local hs-block-start-regexp
+              "\\({\\|[[:space:]]*#[[:space:]]*\\(?:if\\|else\\b\\|elif\\b\\)\\)")
+  (setq-local hs-block-end-regexp
+              "\\(}\\|#[[:space:]]*\\(?:else\\b\\|elif\\b\\|endif\\b\\)\\)")
+  (setq-local hs-forward-sexp-func #'my-c-hs-forward-sexp))
+
+(dolist (hook '(c-mode-hook c-ts-mode-hook c++-mode-hook c++-ts-mode-hook))
+  (add-hook hook #'my-c-hs-init))
+
+;;; --- compilation no ask ---
 (defun my-compile-no-ask ()
   "Compile the project immediately without prompting to save or confirm."
   (interactive)
