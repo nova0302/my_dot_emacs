@@ -344,6 +344,10 @@ called hs-grok-mode-type — so these setq-locals take precedence."
               (window-height . 15)) ;; Change 15 to your preferred number of lines
             display-buffer-alist))
 
+;;; --- for claude code ide ---
+(use-package vterm :straight t)
+(use-package project :straight t)
+(use-package transient :straight t)
 (use-package claude-code-ide
   :straight (:type git :host github :repo "manzaltu/claude-code-ide.el")
   :bind ("C-c C-'" . claude-code-ide-menu) ; Set your favorite keybinding
